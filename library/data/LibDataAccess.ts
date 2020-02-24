@@ -10,17 +10,20 @@
 
 import { Pool, PoolClient, QueryResult } from 'pg';
 import LibConnection from './LibConnection';
-import { SqlParameterizedType } from '../types';
+import {
+  ILibDataAccess,
+  ISqlParameterized
+} from '../interfaces/ILibDataAccess';
 
 /** A class for executing sqls */
-class LibDataAccess {
+class LibDataAccess implements ILibDataAccess {
   // #region Private Properties
   private pool: Pool;
   private client: PoolClient | null = null;
   // #endregion
 
-  constructor(pool: Pool) {
-    this.pool = pool;
+  constructor() {
+    this.pool = LibConnection.getPool();
   }
 
   // #region Private Functions
@@ -51,6 +54,7 @@ class LibDataAccess {
   // #endregion
 
   // #region Public Functions
+  /** Begin a transaction */
   public async beginTransaction(): Promise<void> {
     const client = await this.getClient();
     if (client) {
@@ -68,8 +72,9 @@ class LibDataAccess {
     }
   }
 
+  /** execute transaction with single sql */
   public async executeTransactionWithSqlParameterized(
-    args: SqlParameterizedType
+    args: ISqlParameterized
   ): Promise<any[] | null> {
     if (this.client) {
       try {
@@ -90,8 +95,9 @@ class LibDataAccess {
     }
   }
 
+  /** execute transaction with multi sql */
   public async executeTransactionWithSqlsParameterized(
-    args: SqlParameterizedType[]
+    args: ISqlParameterized[]
   ): Promise<any[] | null> {
     try {
       const arr: any[] = [];
@@ -117,6 +123,7 @@ class LibDataAccess {
     }
   }
 
+  /** Commit transaction */
   public async commitTransaction(): Promise<void> {
     if (this.client) {
       try {
@@ -133,6 +140,7 @@ class LibDataAccess {
     }
   }
 
+  /** Rollback transaction */
   public async rollbackTransaction(err: Error): Promise<void> {
     if (this.client) {
       try {
@@ -148,8 +156,9 @@ class LibDataAccess {
     }
   }
 
+  /** execute single sql return rows count */
   public async executeNonQueryWithSql(
-    args: SqlParameterizedType
+    args: ISqlParameterized
   ): Promise<number | null> {
     try {
       const { sql, replacements = [] } = args;
@@ -164,8 +173,9 @@ class LibDataAccess {
     }
   }
 
+  /** execute multi sql return rows count */
   public async executeNonQueryWithSqls(
-    args: SqlParameterizedType[]
+    args: ISqlParameterized[]
   ): Promise<number | null> {
     try {
       let n: number = 0;
@@ -186,8 +196,9 @@ class LibDataAccess {
     }
   }
 
+  /** execute single sql return rows */
   public async executeRowsWithSql(
-    args: SqlParameterizedType
+    args: ISqlParameterized
   ): Promise<any[] | null> {
     try {
       const { sql, replacements = [] } = args;
@@ -202,8 +213,9 @@ class LibDataAccess {
     }
   }
 
+  /** execute multi sql return rows */
   public async executeRowsWithSqls(
-    args: SqlParameterizedType[]
+    args: ISqlParameterized[]
   ): Promise<any[] | null> {
     try {
       const arr: any[] = [];

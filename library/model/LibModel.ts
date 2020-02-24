@@ -9,6 +9,7 @@
  * ******************************************/
 
 import { TableType, ModelConstructorArgsType } from '../types';
+import { ILibModelArgs, ILibTable } from '../interfaces/ILibModel';
 import LibDataAccess from '../data/LibDataAccess';
 import LibSQLBuilder from '../data/LibSQLBuilder';
 
@@ -16,11 +17,11 @@ import LibSQLBuilder from '../data/LibSQLBuilder';
  * Model base
  */
 class LibModel {
-  // #region Private Properties
-  public tbls: TableType[];
+  // #region Protected Properties
+  protected tbls: ILibTable[];
   // #endregion
 
-  constructor(args: ModelConstructorArgsType) {
+  constructor(args: ILibModelArgs) {
     const { autoCreate = false, tables } = args;
     if (!tables) {
       throw new Error(`Tables in the model couldn't be null or undefined!`);
@@ -30,6 +31,10 @@ class LibModel {
     }
     this.tbls = tables;
     if (autoCreate) {
+      const builder = new LibSQLBuilder(tables);
+      const dataAccess = new LibDataAccess();
+      const createSqls = builder.buildCreateTableSQL();
+      dataAccess.executeNonQueryWithSqls(createSqls.map(sql => ({ sql })));
     }
   }
 

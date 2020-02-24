@@ -8,15 +8,18 @@
  *
  * ******************************************/
 
-import { TableType } from '../types';
+import { TableType, SqlParameterizedType } from '../types';
+import { ILibTable } from '../interfaces/ILibModel';
+import { ISqlParameterized } from '../interfaces/ILibDataAccess';
 import { DataType } from '../enums';
 import LibSysUtils from '../utils/LibSysUtils';
+import LibDataAccess from './LibDataAccess';
 
 /** A class for building sql */
 class LibSQLBuilder {
-  private tbls: TableType[];
+  private tbls: ILibTable[];
 
-  constructor(tables: TableType[]) {
+  constructor(tables: ILibTable[]) {
     this.tbls = tables;
   }
 
@@ -90,7 +93,7 @@ class LibSQLBuilder {
    * @param index table index (since 0)
    * @returns data table
    */
-  private getTableByIndex(index: number): TableType | null {
+  private getTableByIndex(index: number): ILibTable | null {
     const tables = this.tbls.filter(tbl => tbl.index === index);
     if (tables && tables.length > 0) {
       return tables[0];
@@ -99,7 +102,12 @@ class LibSQLBuilder {
     return null;
   }
 
-  private validateFieldsAndValues(fields: string[], values: any[]) {
+  /**
+   * check validity of fields and values
+   * @param fields
+   * @param values
+   */
+  private validateFieldsAndValues(fields: string[], values: any[]): boolean {
     let validity = true;
     if (!fields) {
       console.error(`fields in LibSQLBuilder shouldn't be null or undefined`);
@@ -117,20 +125,30 @@ class LibSQLBuilder {
     return validity;
   }
 
-  private generateParameterizedString(length: number): string {
-    let str = '';
-    for (let i: number = 0; i < length; i += 1) {
-      str = str.concat(`$${i + 1}`);
-      if (i !== length - 1) {
-        str = str.concat(', ');
-      }
+  /**
+   * A helper function to check whether the column exists in the dbtable
+   * @param tableName the name of dbtable
+   * @param columnName the column name you will check
+   * @returns exist or not
+   */
+  async checkTableColumnExist(
+    tableName: string,
+    columnName: string
+  ): Promise<boolean> {
+    const dataAccess = new LibDataAccess();
+    try {
+      const sql = `SELECT column_name FROM information_schema.columns WHERE table_name = '${tableName}' AND column_name = '${columnName}' LIMIT 1`;
+      const res = await dataAccess.executeNonQueryWithSql({ sql });
+      return res ? res > 0 : false;
+    } catch (e) {
+      throw e;
     }
-    return str;
   }
 
   // #endregion
 
-  public getCreateTableSQL(): string[] {
+  /** build create table sql */
+  public buildCreateTableSQL(): string[] {
     const sqls: string[] = [];
     this.tbls.forEach(tbl => {
       const { name: tblName, fields, primaryKeys, unique } = tbl;
@@ -209,23 +227,170 @@ class LibSQLBuilder {
     return sqls;
   }
 
-  public getInsertSQL(
+  /**
+   * build insert sql
+   * @param index table index
+   * @param fields fields you want to set when insert
+   * @param values values you want to set when insert
+   */
+  public buildInsertSQL(
     index: number,
     fields: string[],
     values: any[]
-  ): string | null {
+  ): ISqlParameterized | null {
     if (this.validateFieldsAndValues(fields, values)) {
-      let sql = '';
       const tbl = this.getTableByIndex(index);
       if (tbl) {
+        let sql = '';
+        let valsStr = '';
         const fieldsStr = LibSysUtils.mergeString(',', false, ...fields);
-        let valsStr = this.generateParameterizedString(values.length);
+        for (let i: number = 0; i < values.length; i += 1) {
+          valsStr = valsStr.concat(`$${i + 1}`);
+          if (i !== values.length - 1) {
+            valsStr = valsStr.concat(', ');
+          }
+        }
         sql = `INSERT INTO ${tbl.name} ( ${fieldsStr} ) VALUES ( ${valsStr} ) RETURNING *;`;
+        return { sql, replacements: values };
       }
-      return sql;
+      return null;
     }
     return null;
   }
+
+  /**
+   * build delete sql with primary key values
+   * @param index table index
+   * @param pkValues primary key values
+   */
+  public buildDeleteSQLWithPks(
+    index: number,
+    pkValues: any[]
+  ): ISqlParameterized | null {
+    const tbl = this.getTableByIndex(index);
+    if (tbl) {
+      const pks = tbl.primaryKeys;
+      if (this.validateFieldsAndValues(pks, pkValues)) {
+        let sql = '';
+        sql = sql.concat(`DELETE FROM ${tbl.name} WHERE `);
+        pks.forEach((pk, i) => {
+          sql = sql.concat(`${pk} = $${i + 1} `);
+          if (i !== pks.length - 1) {
+            sql = sql.concat(' AND ');
+          }
+        });
+        sql = sql.concat(' RETURNING *;');
+        return { sql, replacements: pkValues };
+      }
+      return null;
+    }
+    return null;
+  }
+
+  /**
+   * build delete sql with where clause
+   * @param index table index
+   * @param whereClause
+   */
+  public buildDeleteSQLWithWhereClause(
+    index: number,
+    whereClause?: string
+  ): ISqlParameterized | null {
+    const tbl = this.getTableByIndex(index);
+    if (tbl) {
+      let sql = '';
+      sql = sql.concat(`DELETE FROM ${tbl.name} `);
+      if (whereClause) {
+        sql = sql.concat(`WHERE ${whereClause}`);
+      }
+      sql = sql.concat(' RETURNING *;');
+      return { sql };
+    }
+    return null;
+  }
+
+  /**
+   * build update sql with primary key values
+   * @param index table index
+   * @param updateFields fields you want to set when update
+   * @param updateValues values you want to set when update
+   * @param pkValues primary key values
+   */
+  public buildUpdateSQLWithPks(
+    index: number,
+    updateFields: string[],
+    updateValues: any[],
+    pkValues: any[]
+  ): ISqlParameterized | null {
+    if (this.validateFieldsAndValues(updateFields, updateValues)) {
+      const tbl = this.getTableByIndex(index);
+      if (tbl) {
+        const pks = tbl.primaryKeys;
+        if (this.validateFieldsAndValues(pks, pkValues)) {
+          let sql = '';
+          let i = 1;
+          sql = sql.concat(`UPDATE ${tbl.name} SET `);
+          updateFields.forEach(f => {
+            sql = sql.concat(`${f} = $${i} `);
+            i += 1;
+            if (i !== updateFields.length - 1) {
+              sql = sql.concat(', ');
+            }
+          });
+          sql = sql.concat(' WHERE ');
+          pks.forEach(pk => {
+            sql = sql.concat(`${pk} = $${i} `);
+            i += 1;
+            if (i !== pks.length - 1) {
+              sql = sql.concat(' AND ');
+            }
+          });
+          sql = sql.concat(' RETURNING *;');
+          return { sql, replacements: [...updateValues, ...pkValues] };
+        }
+        return null;
+      }
+      return null;
+    }
+    return null;
+  }
+
+  /**
+   * build update sql with where clause
+   * @param index table index
+   * @param updateFields fields you want to set when update
+   * @param updateValues values you want to set when update
+   * @param whereClause
+   */
+  public buildUpdateSQLWithWhereClause(
+    index: number,
+    updateFields: string[],
+    updateValues: any[],
+    whereClause?: string
+  ): ISqlParameterized | null {
+    if (this.validateFieldsAndValues(updateFields, updateValues)) {
+      const tbl = this.getTableByIndex(index);
+      if (tbl) {
+        let sql = '';
+        sql = sql.concat(`UPDATE ${tbl.name} SET `);
+        updateFields.forEach((f, i) => {
+          sql = sql.concat(`${f} = $${i + 1} `);
+          if (i !== updateFields.length - 1) {
+            sql = sql.concat(', ');
+          }
+        });
+        if (whereClause) {
+          sql = sql.concat(` WHERE ${whereClause}`);
+        }
+        sql = sql.concat(' RETURNING *;');
+        return { sql, replacements: updateValues };
+      }
+      return null;
+    }
+    return null;
+  }
+
+  // public buildQuerySQL(): ISqlParameterized | null {}
 }
 
 export default LibSQLBuilder;
