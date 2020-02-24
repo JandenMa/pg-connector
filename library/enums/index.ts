@@ -1,0 +1,19 @@
+export enum DataType {
+  SERIAL,
+  BIT,
+  BOOLEAN,
+  CHAR,
+  VARCHAR,
+  INT,
+  BIGINT,
+  SMALLINT,
+  FLOAT,
+  DOUBLE,
+  DECIMAL,
+  NUMERIC,
+  JSON,
+  DATE,
+  TIMESTAMP,
+  TIMESTAMPTZ,
+  TEXT
+}

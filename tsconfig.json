@@ -1,0 +1,28 @@
+{
+  "module": "commonjs",
+  "target": "es2015",
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "strictNullChecks": true,
+    "strict": true,
+    "alwaysStrict": true,
+    "sourceMap": false,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "pretty": true,
+    "listFiles": true,
+    "listEmittedFiles": true,
+    "lib": ["es2019"],
+    // "module": "esnext",
+    "declaration": true,
+    "removeComments": true,
+    // "target": "es6",
+    // "jsx": "preserve",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "typeRoots": ["./node_modules/@types"]
+  },
+  "typeRoots": ["./node_modules/@types"],
+  "include": ["./**/*"],
+  "exclude": ["node_modules", "*.test.ts", "**/*.spec.ts", "*.js"]
+}
