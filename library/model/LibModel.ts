@@ -33,7 +33,7 @@ class LibModel {
     if (autoCreate) {
       const builder = new LibSQLBuilder(tables);
       const dataAccess = new LibDataAccess();
-      const createSqls = builder.buildCreateTableSQL();
+      const createSqls = builder.buildCreateTableSql();
       dataAccess.executeNonQueryWithSqls(createSqls.map(sql => ({ sql })));
     }
   }

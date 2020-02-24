@@ -8,15 +8,18 @@
  *
  * ******************************************/
 
-import { TableType, SqlParameterizedType } from '../types';
 import { ILibTable } from '../interfaces/ILibModel';
 import { ISqlParameterized } from '../interfaces/ILibDataAccess';
+import {
+  ILibSQLBuilder,
+  ILibQuerySqlExtendArgs
+} from '../interfaces/ILibSQLBuilder';
 import { DataType } from '../enums';
 import LibSysUtils from '../utils/LibSysUtils';
 import LibDataAccess from './LibDataAccess';
 
 /** A class for building sql */
-class LibSQLBuilder {
+class LibSQLBuilder implements ILibSQLBuilder {
   private tbls: ILibTable[];
 
   constructor(tables: ILibTable[]) {
@@ -25,67 +28,24 @@ class LibSQLBuilder {
 
   // #region Private Functions
   /**
-   * convert table index to letter (supports 26 tables right now)
+   * convert table index to letter (from A to ZZZZZZZ..)
    * @param i table index
    * @returns letter
    */
   private convertIndexToLetter(i: number): string {
-    switch (i) {
-      case 0:
-        return ' A';
-      case 1:
-        return ' B';
-      case 2:
-        return ' C';
-      case 3:
-        return ' D';
-      case 4:
-        return ' E';
-      case 5:
-        return ' F';
-      case 6:
-        return ' G';
-      case 7:
-        return ' H';
-      case 8:
-        return ' I';
-      case 9:
-        return ' J';
-      case 10:
-        return ' K';
-      case 11:
-        return ' L';
-      case 12:
-        return ' M';
-      case 13:
-        return ' N';
-      case 14:
-        return ' O';
-      case 15:
-        return ' P';
-      case 16:
-        return ' Q';
-      case 17:
-        return ' R';
-      case 18:
-        return ' S';
-      case 19:
-        return ' T';
-      case 20:
-        return ' U';
-      case 21:
-        return ' V';
-      case 22:
-        return ' W';
-      case 23:
-        return ' X';
-      case 24:
-        return ' Y';
-      case 25:
-        return ' Z';
-      default:
-        return ' ';
+    let letter = '';
+    if (i >= 26) {
+      const scale = Math.floor((i - 26) / 26);
+      const remainder = (i - 26) % 26;
+      letter = letter.concat(
+        this.convertIndexToLetter(scale),
+        this.convertIndexToLetter(remainder)
+      );
+    } else {
+      const ascii = 65;
+      letter = letter.concat(String.fromCharCode(ascii + i));
     }
+    return letter;
   }
 
   /**
@@ -145,10 +105,30 @@ class LibSQLBuilder {
     }
   }
 
+  /**
+   * generate string for insert extend args
+   * @param options
+   */
+  private generateInsertExtendStr(options: ILibQuerySqlExtendArgs): string {
+    const { orderBy, limit, offset } = options;
+    let sql = '';
+
+    if (orderBy) {
+      sql = sql.concat(` ORDER BY "${orderBy}"`);
+    }
+    if (limit) {
+      sql = sql.concat(` LIMIT ${limit}`);
+    }
+    if (offset) {
+      sql = sql.concat(` OFFSET ${offset}`);
+    }
+    return sql;
+  }
+
   // #endregion
 
   /** build create table sql */
-  public buildCreateTableSQL(): string[] {
+  public buildCreateTableSql(): string[] {
     const sqls: string[] = [];
     this.tbls.forEach(tbl => {
       const { name: tblName, fields, primaryKeys, unique } = tbl;
@@ -233,7 +213,7 @@ class LibSQLBuilder {
    * @param fields fields you want to set when insert
    * @param values values you want to set when insert
    */
-  public buildInsertSQL(
+  public buildInsertSql(
     index: number,
     fields: string[],
     values: any[]
@@ -243,7 +223,10 @@ class LibSQLBuilder {
       if (tbl) {
         let sql = '';
         let valsStr = '';
-        const fieldsStr = LibSysUtils.mergeString(',', false, ...fields);
+        const insertFields = fields.map(field =>
+          LibSysUtils.getQuoteString(field, false)
+        );
+        const fieldsStr = LibSysUtils.mergeString(',', false, ...insertFields);
         for (let i: number = 0; i < values.length; i += 1) {
           valsStr = valsStr.concat(`$${i + 1}`);
           if (i !== values.length - 1) {
@@ -263,7 +246,7 @@ class LibSQLBuilder {
    * @param index table index
    * @param pkValues primary key values
    */
-  public buildDeleteSQLWithPks(
+  public buildDeleteSqlByPks(
     index: number,
     pkValues: any[]
   ): ISqlParameterized | null {
@@ -290,9 +273,9 @@ class LibSQLBuilder {
   /**
    * build delete sql with where clause
    * @param index table index
-   * @param whereClause
+   * @param whereClause where clause
    */
-  public buildDeleteSQLWithWhereClause(
+  public buildDeleteSqlByWhereClause(
     index: number,
     whereClause?: string
   ): ISqlParameterized | null {
@@ -316,7 +299,7 @@ class LibSQLBuilder {
    * @param updateValues values you want to set when update
    * @param pkValues primary key values
    */
-  public buildUpdateSQLWithPks(
+  public buildUpdateSqlByPks(
     index: number,
     updateFields: string[],
     updateValues: any[],
@@ -360,9 +343,9 @@ class LibSQLBuilder {
    * @param index table index
    * @param updateFields fields you want to set when update
    * @param updateValues values you want to set when update
-   * @param whereClause
+   * @param whereClause where clause
    */
-  public buildUpdateSQLWithWhereClause(
+  public buildUpdateSqlByWhereClause(
     index: number,
     updateFields: string[],
     updateValues: any[],
@@ -390,7 +373,148 @@ class LibSQLBuilder {
     return null;
   }
 
-  // public buildQuerySQL(): ISqlParameterized | null {}
+  /**
+   * build single query sql for one table by primary keys
+   * @param index table index
+   * @param selectFields fields you want to select
+   * @param pkValues primary keys value
+   * @param options extend options
+   */
+  public buildQuerySqlByPks(
+    index: number,
+    selectFields: string[] | '*',
+    pkValues: any[],
+    options?: ILibQuerySqlExtendArgs
+  ): ISqlParameterized | null {
+    const tbl = this.getTableByIndex(index);
+    if (tbl) {
+      const pks = tbl.primaryKeys;
+      if (this.validateFieldsAndValues(pks, pkValues)) {
+        let fieldsStr = '';
+        if (selectFields === '*') {
+          fieldsStr = '*';
+        } else {
+          const fields = selectFields.map(field =>
+            LibSysUtils.getQuoteString(field, false)
+          );
+          fieldsStr = LibSysUtils.mergeString(', ', false, ...fields);
+        }
+        let sql = '';
+        sql = sql.concat(
+          `SELECT ${
+            options && options.distinct ? 'DISTINCT' : ''
+          } ${fieldsStr} FROM ${tbl.name} WHERE `
+        );
+        pks.forEach((pk, i) => {
+          sql = sql.concat(`${pk} = $${i} `);
+          if (i !== pks.length - 1) {
+            sql = sql.concat(' AND ');
+          }
+        });
+        if (options) {
+          sql = sql.concat(this.generateInsertExtendStr(options));
+        }
+        sql = sql.concat(';');
+        return { sql, replacements: [...pkValues] };
+      }
+      return null;
+    }
+    return null;
+  }
+
+  /**
+   * build single query sql for one table by where clause
+   * @param index table index
+   * @param selectFields fields you want to select
+   * @param whereClause where clause
+   * @param options extend options
+   */
+  public buildQuerySqlByWhereClause(
+    index: number,
+    selectFields: string[] | '*',
+    whereClause?: string,
+    options?: ILibQuerySqlExtendArgs
+  ): ISqlParameterized | null {
+    const tbl = this.getTableByIndex(index);
+    if (tbl) {
+      let fieldsStr = '';
+      if (selectFields === '*') {
+        fieldsStr = '*';
+      } else {
+        const fields = selectFields.map(field =>
+          LibSysUtils.getQuoteString(field, false)
+        );
+        fieldsStr = LibSysUtils.mergeString(', ', false, ...fields);
+      }
+      let sql = '';
+      sql = sql.concat(
+        `SELECT ${
+          options && options.distinct ? 'DISTINCT' : ''
+        } ${fieldsStr} FROM ${tbl.name} `
+      );
+      if (whereClause) {
+        sql = sql.concat(` WHERE ${whereClause}`);
+      }
+      if (options) {
+        sql = sql.concat(this.generateInsertExtendStr(options));
+      }
+      sql = sql.concat(';');
+      return { sql };
+    }
+    return null;
+  }
+
+  /**
+   * build single query sql for model by where clause
+   * @param index table index
+   * @param selectFields fields you want to select (should with letter like A.xxx)
+   * @param whereClause  where clause
+   * @param options extend options
+   */
+  public buildModelQuerySqlByWhereClause(
+    selectFields: string[] | '*',
+    whereClause?: string,
+    options?: ILibQuerySqlExtendArgs
+  ): ISqlParameterized | null {
+    let fieldsStr = '';
+    if (selectFields === '*') {
+      fieldsStr = '*';
+    } else {
+      const fields = selectFields.map(field =>
+        LibSysUtils.getQuoteString(field, false)
+      );
+      fieldsStr = LibSysUtils.mergeString(', ', false, ...fields);
+    }
+    let sql = `SELECT ${
+      options && options.distinct ? 'DISTINCT' : ''
+    } ${fieldsStr} FROM ${this.tbls[0].name} ${this.convertIndexToLetter(0)}`;
+    if (this.tbls.length > 1) {
+      for (let i = 1; i < this.tbls.length; i += 1) {
+        const tbl = this.tbls[i];
+        const parentPks = this.tbls[i - 1].primaryKeys;
+        const lastIndexLetter = this.convertIndexToLetter(i - 1);
+        const currIndexLetter = this.convertIndexToLetter(i);
+        sql = sql.concat(` INNER JOIN ${tbl.name} ${currIndexLetter} ON `);
+
+        parentPks.forEach((p, j) => {
+          sql = sql.concat(
+            ` ${lastIndexLetter}.${p} = ${currIndexLetter}.${tbl.primaryKeys[j]} `
+          );
+          if (j !== parentPks.length) {
+            sql = sql.concat(' AND ');
+          }
+        });
+      }
+    }
+    if (whereClause) {
+      sql = sql.concat(` WHERE ${whereClause}`);
+    }
+    if (options) {
+      sql = sql.concat(this.generateInsertExtendStr(options));
+    }
+    sql = sql.concat(';');
+    return { sql };
+  }
 }
 
 export default LibSQLBuilder;
