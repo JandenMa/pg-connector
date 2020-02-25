@@ -32,3 +32,7 @@ export interface ILibModelArgs {
   /** data tables */
   tables: ILibTable[];
 }
+
+export interface ILibModel {
+  readonly dataTables: ILibTable[];
+}
