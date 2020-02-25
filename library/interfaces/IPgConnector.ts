@@ -1,5 +1,3 @@
-import { ILibDataAccess } from './ILibDataAccess';
-
 export interface IConnection {
   /** Postgresql host, default localhost */
   host?: string;

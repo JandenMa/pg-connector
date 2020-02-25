@@ -7,12 +7,12 @@ import LibDataAccess from './library/data/LibDataAccess';
 import LibSQLBuilder from './library/data/LibSQLBuilder';
 
 class PgConnector {
-  public Model: typeof LibModel;
-  public SQLBuilder: typeof LibSQLBuilder;
-  public DataAccess: typeof LibDataAccess;
-  public DataType: typeof DataType;
+  public readonly Model: typeof LibModel;
+  public readonly SQLBuilder: typeof LibSQLBuilder;
+  public readonly DataAccess: typeof LibDataAccess;
+  public readonly DataType: typeof DataType;
 
-  constructor(args: IConnection) {
+  constructor(args?: IConnection) {
     const {
       database = 'postgres',
       host = 'localhost',
@@ -23,7 +23,7 @@ class PgConnector {
       connectionTimeoutMillis = 0,
       idleTimeoutMillis = 10000,
       ssl = false
-    } = args;
+    } = args || {};
     const pool = new Pool({
       max: connectionMax,
       user: userName,
