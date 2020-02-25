@@ -1,6 +1,6 @@
 /******** Library Class Information **********
  *
- * Description: A class for Connecting to Postgresql
+ * Description: A class to manage global states
  *
  * Creator: Janden Ma
  *
@@ -11,7 +11,7 @@
 import { Pool } from 'pg';
 import { ConnectionArgsType } from '../types';
 
-/** A class for connecting to Postgresql */
+/** A class to manage global states */
 class LibConnection {
   private static pool: Pool;
 
