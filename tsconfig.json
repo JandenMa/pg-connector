@@ -16,7 +16,7 @@
     // "module": "esnext",
     "declaration": true,
     "removeComments": true,
-    // "target": "es6",
+    "target": "es5",
     // "jsx": "preserve",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
