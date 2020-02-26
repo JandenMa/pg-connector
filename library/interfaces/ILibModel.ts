@@ -34,5 +34,5 @@ export interface ILibModelArgs {
 }
 
 export interface ILibModel {
-  readonly dataTables: ILibTable[];
+  tables: ILibTable[];
 }

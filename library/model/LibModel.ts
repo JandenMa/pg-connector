@@ -17,7 +17,13 @@ import LibSQLBuilder from '../data/LibSQLBuilder';
  */
 class LibModel implements ILibModel {
   // #region Properties
-  public readonly dataTables: ILibTable[];
+  private tbls: ILibTable[];
+  // #endregion
+
+  // #region Accessors
+  public get tables(): ILibTable[] {
+    return this.tbls;
+  }
   // #endregion
 
   constructor(args: ILibModelArgs) {
@@ -28,7 +34,7 @@ class LibModel implements ILibModel {
     if (tables.length === 0) {
       throw new Error(`Tables in the model couldn't be an empty array!`);
     }
-    this.dataTables = tables;
+    this.tbls = tables;
     if (autoCreate) {
       const builder = new LibSQLBuilder(tables);
       const dataAccess = new LibDataAccess();
@@ -41,7 +47,7 @@ class LibModel implements ILibModel {
     if (!tableIndex || !data) {
       throw new Error('Missing parameter!');
     }
-    const tables = this.dataTables.filter(tbl => tbl.index === tableIndex);
+    const tables = this.tbls.filter(tbl => tbl.index === tableIndex);
     if (tables && tables.length > 0) {
       const tbl = tables[0];
       const notNullList = tbl.primaryKeys;
@@ -62,21 +68,18 @@ class LibModel implements ILibModel {
   }
 
   // #region Protected Functions
-  protected beforeInsertTable(tableIndex: number, data: object) {
+
+  // #region add new
+  protected beforeAddNew(tableIndex: number, data: object) {
     if (!tableIndex || !data) {
       throw new Error('Missing parameter!');
     }
     this.verfifyTblData(tableIndex, data);
   }
 
-  protected afterInsertTable(res: object) {}
-
-  protected async insertTable(
-    tableIndex: number,
-    data: object
-  ): Promise<object> {
-    this.beforeInsertTable(tableIndex, data);
-    const builder = new LibSQLBuilder(this.dataTables);
+  protected async addNew(tableIndex: number, data: object): Promise<object> {
+    this.beforeAddNew(tableIndex, data);
+    const builder = new LibSQLBuilder(this.tbls);
     const fields: string[] = [];
     const values: any[] = [];
     Object.keys(data).forEach(field => {
@@ -92,10 +95,38 @@ class LibModel implements ILibModel {
       if (!res || res.length === 0) {
         throw new Error('some error thrown when executing insert sql');
       }
-      this.afterInsertTable(res[0]);
+      this.afterAddNew(res[0]);
       return res[0];
     }
   }
+
+  protected afterAddNew(res: object) {}
+  // #endregion
+
+  // #region delete
+  protected beforeDelete() {}
+
+  protected async delete() {}
+
+  protected afterDelete() {}
+  // #endregion
+
+  // #region update
+  protected beforeUpdate() {}
+
+  protected async update() {}
+
+  protected afterUpdate() {}
+  // #endregion
+
+  // #region load
+  protected beforeLoad() {}
+
+  protected async load() {}
+
+  protected afterLoad() {}
+  // #endregion
+
   // #endregion
 }
 
