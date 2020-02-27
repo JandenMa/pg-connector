@@ -9,6 +9,7 @@
  * ******************************************/
 
 import { ILibModelArgs, ILibTable, ILibModel } from '../interfaces/ILibModel';
+import { ISqlParameterized } from '../interfaces/ILibDataAccess';
 import LibDataAccess from '../data/LibDataAccess';
 import LibSQLBuilder from '../data/LibSQLBuilder';
 
@@ -43,6 +44,7 @@ class LibModel implements ILibModel {
     }
   }
 
+  // #region Private Functions
   private verfifyTblData(tableIndex: number, data: object): boolean {
     if (!tableIndex || !data) {
       throw new Error('Missing parameter!');
@@ -67,18 +69,17 @@ class LibModel implements ILibModel {
     }
   }
 
-  // #region Protected Functions
-
-  // #region add new
-  protected beforeAddNew(tableIndex: number, data: object) {
+  /**
+   * handle insert into single table
+   * @param tableIndex table index
+   * @param data inserting data
+   */
+  private async handleAddNewIntoTable(tableIndex: number, data: object) {
     if (!tableIndex || !data) {
       throw new Error('Missing parameter!');
     }
     this.verfifyTblData(tableIndex, data);
-  }
-
-  protected async addNew(tableIndex: number, data: object): Promise<object> {
-    this.beforeAddNew(tableIndex, data);
+    await this.beforeAddNew();
     const builder = new LibSQLBuilder(this.tbls);
     const fields: string[] = [];
     const values: any[] = [];
@@ -88,43 +89,159 @@ class LibModel implements ILibModel {
     });
     const sql = builder.buildInsertSql(tableIndex, fields, values);
     if (!sql) {
-      throw new Error('some error thrown when building insert sql');
+      throw new Error('Some error thrown when building insert sql');
     } else {
       const dataAccess = new LibDataAccess();
       const res = await dataAccess.executeRowsWithSql(sql);
       if (!res || res.length === 0) {
-        throw new Error('some error thrown when executing insert sql');
+        throw new Error('Some error thrown when executing insert sql');
       }
-      this.afterAddNew(res[0]);
+      await this.afterAddNew(res[0]);
       return res[0];
     }
   }
 
-  protected afterAddNew(res: object) {}
+  /**
+   * handle insert into multiple tables
+   * @param data inserting data
+   */
+  private async handleAddNewIntoTables(data: any[]) {
+    const sqls: ISqlParameterized[] = [];
+    data.forEach((table, index) => {
+      this.verfifyTblData(index, table);
+      const builder = new LibSQLBuilder(this.tbls);
+      const fields: string[] = [];
+      const values: any[] = [];
+      Object.keys(data).forEach(field => {
+        fields.push(field);
+        values.push(data[field]);
+      });
+      const sql = builder.buildInsertSql(index, fields, values);
+      if (!sql) {
+        throw new Error('Some error thrown when building insert sql');
+      } else {
+        sqls.push(sql);
+      }
+    });
+    if (sqls.length > 0) {
+      await this.beforeAddNew();
+      const dataAccess = new LibDataAccess();
+      await dataAccess.beginTransaction();
+      try {
+        const res = await dataAccess.executeTransactionWithSqlsParameterized(
+          sqls
+        );
+        if (!res) {
+          throw new Error('Some error thrown when executing insert sql');
+        }
+        await dataAccess.commitTransaction();
+        await this.afterAddNew(res);
+        return res;
+      } catch (e) {
+        console.error(e);
+        await dataAccess.rollbackTransaction(e);
+        return [];
+      }
+    } else {
+      throw new Error('No insert sql created!');
+    }
+  }
+  // #endregion
+
+  // #region Protected Functions
+
+  // #region add new
+  /**
+   * do something you want before adding new
+   */
+  protected async beforeAddNew() {
+    // do something you want before adding new
+  }
+
+  /**
+   * handle insert into multiple tables (Transaction)
+   * @param data inserting data
+   */
+  protected async addNew(data: any[]): Promise<any[]>;
+
+  /**
+   * insert into single table (Single Query)
+   * @param data inserting data
+   * @param tableIndex table index
+   */
+  protected async addNew(data: object, tableIndex: number): Promise<object>;
+
+  protected async addNew(data: any[] | object, tableIndex?: number) {
+    if (data instanceof Object && tableIndex !== undefined) {
+      return this.handleAddNewIntoTable(tableIndex, data);
+    } else if (data instanceof Array && data.length > 0) {
+      return this.handleAddNewIntoTables(data);
+    } else {
+      throw new Error('Invalid parameter!');
+    }
+  }
+
+  /**
+   * do something you want after adding new
+   * @param res
+   */
+  protected async afterAddNew(res: any[] | object) {
+    // do something you want after adding new
+  }
   // #endregion
 
   // #region delete
-  protected beforeDelete() {}
+  /**
+   * do something you want before deleting
+   */
+  protected beforeDelete() {
+    // do something you want before deleting
+  }
 
   protected async delete() {}
 
-  protected afterDelete() {}
+  /**
+   * do something you want after deleting
+   */
+  protected afterDelete() {
+    // do something you want after deleting
+  }
   // #endregion
 
   // #region update
-  protected beforeUpdate() {}
+  /**
+   * do something you want before updating
+   */
+  protected beforeUpdate() {
+    // do something you want before updating
+  }
 
   protected async update() {}
 
-  protected afterUpdate() {}
+  /**
+   * do something you want after updating
+   */
+  protected afterUpdate() {
+    // do something you want after updating
+  }
   // #endregion
 
   // #region load
-  protected beforeLoad() {}
+  /**
+   * do something you want before loading
+   */
+  protected beforeLoad() {
+    // do something you want before loading
+  }
 
   protected async load() {}
 
-  protected afterLoad() {}
+  /**
+   * do something you want after loading
+   */
+  protected afterLoad() {
+    // do something you want after loading
+  }
   // #endregion
 
   // #endregion
