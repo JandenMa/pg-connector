@@ -11,12 +11,12 @@ export interface ILibDataAccess {
   /** execute transaction with single sql */
   executeTransactionWithSqlParameterized(
     args: ISqlParameterized
-  ): Promise<any[] | null>;
+  ): Promise<any[]>;
 
   /** execute transaction with multi sql */
   executeTransactionWithSqlsParameterized(
     args: ISqlParameterized[]
-  ): Promise<any[] | null>;
+  ): Promise<object>;
 
   /** Commit transaction */
   commitTransaction(): Promise<void>;
@@ -25,14 +25,14 @@ export interface ILibDataAccess {
   rollbackTransaction(err: Error): Promise<void>;
 
   /** execute single sql return rows count */
-  executeNonQueryWithSql(args: ISqlParameterized): Promise<number | null>;
+  executeNonQueryWithSql(args: ISqlParameterized): Promise<number>;
 
   /** execute multi sql return rows count */
-  executeNonQueryWithSqls(args: ISqlParameterized[]): Promise<number | null>;
+  executeNonQueryWithSqls(args: ISqlParameterized[]): Promise<number>;
 
   /** execute single sql return rows */
-  executeRowsWithSql(args: ISqlParameterized): Promise<any[] | null>;
+  executeRowsWithSql(args: ISqlParameterized): Promise<any[]>;
 
   /** execute multi sql return rows */
-  executeRowsWithSqls(args: ISqlParameterized[]): Promise<any[] | null>;
+  executeRowsWithSqls(args: ISqlParameterized[]): Promise<any[]>;
 }

@@ -75,7 +75,7 @@ class LibDataAccess implements ILibDataAccess {
   /** execute transaction with single sql */
   public async executeTransactionWithSqlParameterized(
     args: ISqlParameterized
-  ): Promise<any[] | null> {
+  ): Promise<any[]> {
     if (this.client) {
       try {
         const { sql, replacements = [] } = args;
@@ -98,9 +98,9 @@ class LibDataAccess implements ILibDataAccess {
   /** execute transaction with multi sql */
   public async executeTransactionWithSqlsParameterized(
     args: ISqlParameterized[]
-  ): Promise<any[] | null> {
+  ): Promise<object> {
     try {
-      const arr: any[] = [];
+      const res: object = {};
       await Promise.all(
         args.map(async (arg, index) => {
           if (this.client) {
@@ -110,16 +110,17 @@ class LibDataAccess implements ILibDataAccess {
                 ? await this.client.query(sql, replacements)
                 : await this.client.query(sql);
             this.releaseClient();
-            alias ? (arr[alias] = result.rows) : (arr[index] = result.rows);
+            alias ? (res[alias] = result.rows) : (res[index] = result.rows);
           } else {
             console.error('No client connected!');
           }
         })
       );
-      return arr;
+      this.releaseClient();
+      return res;
     } catch (e) {
       this.rollbackTransaction(e);
-      return [];
+      return {};
     }
   }
 
@@ -159,7 +160,7 @@ class LibDataAccess implements ILibDataAccess {
   /** execute single sql return rows count */
   public async executeNonQueryWithSql(
     args: ISqlParameterized
-  ): Promise<number | null> {
+  ): Promise<number> {
     try {
       const { sql, replacements = [] } = args;
       const result: QueryResult =
@@ -169,14 +170,14 @@ class LibDataAccess implements ILibDataAccess {
       return result.rowCount;
     } catch (e) {
       console.error(e);
-      return null;
+      return 0;
     }
   }
 
   /** execute multi sql return rows count */
   public async executeNonQueryWithSqls(
     args: ISqlParameterized[]
-  ): Promise<number | null> {
+  ): Promise<number> {
     try {
       let n: number = 0;
       await Promise.all(
@@ -192,14 +193,12 @@ class LibDataAccess implements ILibDataAccess {
       return n;
     } catch (e) {
       console.error(e);
-      return null;
+      return 0;
     }
   }
 
   /** execute single sql return rows */
-  public async executeRowsWithSql(
-    args: ISqlParameterized
-  ): Promise<any[] | null> {
+  public async executeRowsWithSql(args: ISqlParameterized): Promise<any[]> {
     try {
       const { sql, replacements = [] } = args;
       const result: QueryResult =
@@ -209,14 +208,12 @@ class LibDataAccess implements ILibDataAccess {
       return result.rows;
     } catch (e) {
       console.error(e);
-      return null;
+      return [];
     }
   }
 
   /** execute multi sql return rows */
-  public async executeRowsWithSqls(
-    args: ISqlParameterized[]
-  ): Promise<any[] | null> {
+  public async executeRowsWithSqls(args: ISqlParameterized[]): Promise<any[]> {
     try {
       const arr: any[] = [];
       await Promise.all(
