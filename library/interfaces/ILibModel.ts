@@ -33,16 +33,20 @@ export interface ILibModelArgs {
   tables: ILibTable[];
 }
 
-export interface ILibModelAddNewArgs {
-  /** table(s) data */
-  data: object | any[];
-  /** table index */
-  tableIndex?: number;
-}
-
 export interface ILibModelDeleteArgs {
   /** table index */
   tableIndex: number;
+  /** primary key values */
+  pkValues?: any[];
+  /** where clause */
+  whereClause?: string;
+}
+
+export interface ILibModelUpdateArgs {
+  /** table index */
+  tableIndex: number;
+  /** data you want to set when update */
+  data: any[];
   /** primary key values */
   pkValues?: any[];
   /** where clause */
