@@ -86,26 +86,6 @@ class LibSQLBuilder implements ILibSQLBuilder {
   }
 
   /**
-   * A helper function to check whether the column exists in the dbtable
-   * @param tableName the name of dbtable
-   * @param columnName the column name you will check
-   * @returns exist or not
-   */
-  async checkTableColumnExist(
-    tableName: string,
-    columnName: string
-  ): Promise<boolean> {
-    const dataAccess = new LibDataAccess();
-    try {
-      const sql = `SELECT column_name FROM information_schema.columns WHERE table_name = '${tableName}' AND column_name = '${columnName}' LIMIT 1`;
-      const res = await dataAccess.executeNonQueryWithSql({ sql });
-      return res ? res > 0 : false;
-    } catch (e) {
-      throw e;
-    }
-  }
-
-  /**
    * generate string for insert extend args
    * @param options
    */
@@ -126,6 +106,8 @@ class LibSQLBuilder implements ILibSQLBuilder {
   }
 
   // #endregion
+
+  //#region Public Functions
 
   /** build create table sql */
   public buildCreateTableSql(): string[] {
@@ -466,7 +448,6 @@ class LibSQLBuilder implements ILibSQLBuilder {
 
   /**
    * build single query sql for model by where clause
-   * @param index table index
    * @param selectFields fields you want to select (should with letter like A.xxx)
    * @param whereClause  where clause
    * @param options extend options
@@ -515,6 +496,27 @@ class LibSQLBuilder implements ILibSQLBuilder {
     sql = sql.concat(';');
     return { sql };
   }
+
+  /**
+   * A helper function to check whether the column exists in the dbtable
+   * @param tableName the name of dbtable
+   * @param columnName the column name you will check
+   * @returns exist or not
+   */
+  public async checkTableColumnExist(
+    tableName: string,
+    columnName: string
+  ): Promise<boolean> {
+    const dataAccess = new LibDataAccess();
+    try {
+      const sql = `SELECT column_name FROM information_schema.columns WHERE table_name = '${tableName}' AND column_name = '${columnName}' LIMIT 1`;
+      const res = await dataAccess.executeNonQueryWithSql({ sql });
+      return res ? res > 0 : false;
+    } catch (e) {
+      throw e;
+    }
+  }
+  // #endregion
 }
 
 export default LibSQLBuilder;
