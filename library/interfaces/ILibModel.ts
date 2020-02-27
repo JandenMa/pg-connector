@@ -33,6 +33,22 @@ export interface ILibModelArgs {
   tables: ILibTable[];
 }
 
+export interface ILibModelAddNewArgs {
+  /** table(s) data */
+  data: object | any[];
+  /** table index */
+  tableIndex?: number;
+}
+
+export interface ILibModelDeleteArgs {
+  /** table index */
+  tableIndex: number;
+  /** primary key values */
+  pkValues?: any[];
+  /** where clause */
+  whereClause?: string;
+}
+
 export interface ILibModel {
   tables: ILibTable[];
 }

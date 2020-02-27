@@ -8,7 +8,13 @@
  *
  * ******************************************/
 
-import { ILibModelArgs, ILibTable, ILibModel } from '../interfaces/ILibModel';
+import {
+  ILibModelArgs,
+  ILibTable,
+  ILibModel,
+  ILibModelAddNewArgs,
+  ILibModelDeleteArgs
+} from '../interfaces/ILibModel';
 import { ISqlParameterized } from '../interfaces/ILibDataAccess';
 import LibDataAccess from '../data/LibDataAccess';
 import LibSQLBuilder from '../data/LibSQLBuilder';
@@ -146,6 +152,29 @@ class LibModel implements ILibModel {
       throw new Error('No insert sql created!');
     }
   }
+
+  private async handleDeleteFromTable(
+    tableIndex: number,
+    pkValues?: any[],
+    whereClause?: string
+  ) {
+    await this.beforeDelete();
+    const builder = new LibSQLBuilder(this.tbls);
+    const sql = pkValues
+      ? builder.buildDeleteSqlByPks(tableIndex, pkValues)
+      : builder.buildDeleteSqlByWhereClause(tableIndex, whereClause);
+    if (!sql) {
+      throw new Error('Some error thrown when building deleting sql');
+    } else {
+      const dataAccess = new LibDataAccess();
+      const res = await dataAccess.executeRowsWithSql(sql);
+      if (!res || res.length === 0) {
+        throw new Error('Some error thrown when executing deleting sql');
+      }
+      await this.afterDelete(res[0]);
+      return res[0];
+    }
+  }
   // #endregion
 
   // #region Protected Functions
@@ -155,29 +184,21 @@ class LibModel implements ILibModel {
    * do something you want before adding new
    */
   protected async beforeAddNew() {
-    // do something you want before adding new
+    // noop
   }
 
-  /**
-   * handle insert into multiple tables (Transaction)
-   * @param data inserting data
-   */
-  protected async addNew(data: any[]): Promise<any[]>;
-
-  /**
-   * insert into single table (Single Query)
-   * @param data inserting data
-   * @param tableIndex table index
-   */
-  protected async addNew(data: object, tableIndex: number): Promise<object>;
-
-  protected async addNew(data: any[] | object, tableIndex?: number) {
-    if (data instanceof Object && tableIndex !== undefined) {
-      return this.handleAddNewIntoTable(tableIndex, data);
-    } else if (data instanceof Array && data.length > 0) {
-      return this.handleAddNewIntoTables(data);
+  protected async addNew(args: ILibModelAddNewArgs) {
+    if (args) {
+      const { data, tableIndex } = args;
+      if (data instanceof Object && tableIndex !== undefined) {
+        return this.handleAddNewIntoTable(tableIndex, data);
+      } else if (data instanceof Array && data.length > 0) {
+        return this.handleAddNewIntoTables(data);
+      } else {
+        throw new Error('Invalid parameter!');
+      }
     } else {
-      throw new Error('Invalid parameter!');
+      throw new Error('Invalid argument!');
     }
   }
 
@@ -186,7 +207,7 @@ class LibModel implements ILibModel {
    * @param res
    */
   protected async afterAddNew(res: any[] | object) {
-    // do something you want after adding new
+    // noop
   }
   // #endregion
 
@@ -195,16 +216,26 @@ class LibModel implements ILibModel {
    * do something you want before deleting
    */
   protected beforeDelete() {
-    // do something you want before deleting
+    // noop
   }
 
-  protected async delete() {}
+  protected async delete(args: ILibModelDeleteArgs): Promise<any[]> {
+    if (args) {
+      const { pkValues, whereClause, tableIndex } = args;
+      if (!pkValues && !whereClause) {
+        throw new Error('Missing parameters');
+      }
+      return this.handleDeleteFromTable(tableIndex, pkValues, whereClause);
+    } else {
+      throw new Error('Invalid argument!');
+    }
+  }
 
   /**
    * do something you want after deleting
    */
-  protected afterDelete() {
-    // do something you want after deleting
+  protected afterDelete(res: any[] | object) {
+    // noop
   }
   // #endregion
 
@@ -213,7 +244,7 @@ class LibModel implements ILibModel {
    * do something you want before updating
    */
   protected beforeUpdate() {
-    // do something you want before updating
+    // noop
   }
 
   protected async update() {}
@@ -222,7 +253,7 @@ class LibModel implements ILibModel {
    * do something you want after updating
    */
   protected afterUpdate() {
-    // do something you want after updating
+    // noop
   }
   // #endregion
 
@@ -231,7 +262,7 @@ class LibModel implements ILibModel {
    * do something you want before loading
    */
   protected beforeLoad() {
-    // do something you want before loading
+    // noop
   }
 
   protected async load() {}
@@ -240,7 +271,7 @@ class LibModel implements ILibModel {
    * do something you want after loading
    */
   protected afterLoad() {
-    // do something you want after loading
+    // noop
   }
   // #endregion
 
