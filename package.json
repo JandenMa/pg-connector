@@ -9,6 +9,15 @@
   },
   "private": false,
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JandenMa/pg-connector"
+  },
+  "bugs": {
+    "url": "https://github.com/JandenMa/pg-connector/issues",
+    "email": "jandenma@vip.qq.com"
+  },
+  "homepage": "https://jandenma.github.io/pg-connector/",
   "dependencies": {
     "lodash": "^4.17.15",
     "pg": "^7.18.2"
