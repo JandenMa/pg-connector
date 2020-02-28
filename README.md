@@ -141,14 +141,14 @@ Pg-Connector is an ORM library for Postgresql on NodeJS.
 - [LibSQLBuilder](https://github.com/JandenMa/pg-connector/blob/master/LibSQLBuilder.md)
 - [LibModel](https://github.com/JandenMa/pg-connector/blob/master/LibModel.md)
 - DataType
-  - SERIAL
+  - SERIAL: Serial Id
   - BIT
   - BOOLEAN
-  - CHARVA
-  - VRCHAR
-  - INT
-  - BIGINT
-  - SMALLINT
+  - CHAR
+  - VARCHAR
+  - INT: Int 4
+  - BIGINT: Int 8
+  - SMALLINT: Int 2
   - FLOAT
   - DOUBLE
   - DECIMAL
@@ -156,5 +156,5 @@ Pg-Connector is an ORM library for Postgresql on NodeJS.
   - JSON
   - DATE
   - TIMESTAMP
-  - TIMESTAMPTZ
+  - TIMESTAMPTZ: Timestamp with time zone
   - TEXT
