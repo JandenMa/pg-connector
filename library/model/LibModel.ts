@@ -17,7 +17,8 @@ import {
   ILibTable,
   ILibModel,
   ILibModelDeleteArgs,
-  ILibModelUpdateArgs
+  ILibModelUpdateArgs,
+  ILibModelLoadArgs
 } from '../interfaces/ILibModel';
 import { ISqlParameterized } from '../interfaces/ILibDataAccess';
 import LibDataAccess from '../data/LibDataAccess';
@@ -47,10 +48,14 @@ class LibModel implements ILibModel {
     }
     this.tbls = tables;
     if (autoCreate) {
-      const builder = new LibSQLBuilder(tables);
-      const dataAccess = new LibDataAccess();
-      const createSqls = builder.buildCreateTableSql();
-      dataAccess.executeNonQueryWithSqls(createSqls.map(sql => ({ sql })));
+      try {
+        const builder = new LibSQLBuilder(tables);
+        const dataAccess = new LibDataAccess();
+        const createSqls = builder.buildCreateTableSql();
+        dataAccess.executeNonQueryWithSqls(createSqls.map(sql => ({ sql })));
+      } catch (e) {
+        throw e;
+      }
     }
   }
 
@@ -92,25 +97,29 @@ class LibModel implements ILibModel {
       throw new Error('Missing parameter!');
     }
     this.verfifyTblData(tableIndex, data);
-    await this.beforeAddNew();
-    const builder = new LibSQLBuilder(this.tbls);
-    const fields: string[] = [];
-    const values: any[] = [];
-    Object.keys(data).forEach(field => {
-      fields.push(field);
-      values.push(data[field]);
-    });
-    const sql = builder.buildInsertSql(tableIndex, fields, values);
-    if (!sql) {
-      throw new Error('Some error thrown when building insert sql');
-    } else {
-      const dataAccess = new LibDataAccess();
-      const res = await dataAccess.executeRowsWithSql(sql);
-      if (!res || res.length === 0) {
-        throw new Error('Some error thrown when executing insert sql');
+    try {
+      await this.beforeAddNew();
+      const builder = new LibSQLBuilder(this.tbls);
+      const fields: string[] = [];
+      const values: any[] = [];
+      Object.keys(data).forEach(field => {
+        fields.push(field);
+        values.push(data[field]);
+      });
+      const sql = builder.buildInsertSql(tableIndex, fields, values);
+      if (!sql) {
+        throw new Error('Some error thrown when building insert sql');
+      } else {
+        const dataAccess = new LibDataAccess();
+        const res = await dataAccess.executeRowsWithSql(sql);
+        if (!res || res.length === 0) {
+          throw new Error('Some error thrown when executing insert sql');
+        }
+        await this.afterAddNew(res[0]);
+        return res[0];
       }
-      await this.afterAddNew(res[0]);
-      return res[0];
+    } catch (e) {
+      throw e;
     }
   }
 
@@ -137,23 +146,27 @@ class LibModel implements ILibModel {
       }
     });
     if (sqls.length > 0) {
-      await this.beforeAddNew();
-      const dataAccess = new LibDataAccess();
-      await dataAccess.beginTransaction();
       try {
-        const res = await dataAccess.executeTransactionWithSqlsParameterized(
-          sqls
-        );
-        if (!res) {
-          throw new Error('Some error thrown when executing insert sql');
+        await this.beforeAddNew();
+        const dataAccess = new LibDataAccess();
+        await dataAccess.beginTransaction();
+        try {
+          const res = await dataAccess.executeTransactionWithSqlsParameterized(
+            sqls
+          );
+          if (!res) {
+            throw new Error('Some error thrown when executing insert sql');
+          }
+          await dataAccess.commitTransaction();
+          await this.afterAddNew(res);
+          return res;
+        } catch (e) {
+          console.error(e);
+          await dataAccess.rollbackTransaction(e);
+          return [];
         }
-        await dataAccess.commitTransaction();
-        await this.afterAddNew(res);
-        return res;
       } catch (e) {
-        console.error(e);
-        await dataAccess.rollbackTransaction(e);
-        return [];
+        throw e;
       }
     } else {
       throw new Error('No insert sql created!');
@@ -196,33 +209,99 @@ class LibModel implements ILibModel {
     whereClause?: string
   ): Promise<any[]> {
     this.verfifyTblData(tableIndex, data);
-    await this.beforeAddNew();
-    const builder = new LibSQLBuilder(this.tbls);
-    const fields: string[] = [];
-    const values: any[] = [];
-    Object.keys(data).forEach(field => {
-      fields.push(field);
-      values.push(data[field]);
-    });
-    await this.beforeUpdate();
-    const sql = pkValues
-      ? builder.buildUpdateSqlByPks(tableIndex, fields, values, pkValues)
-      : builder.buildUpdateSqlByWhereClause(
-          tableIndex,
-          fields,
-          values,
-          whereClause
-        );
-    if (!sql) {
-      throw new Error('Some error thrown when building updating sql');
-    } else {
-      const dataAccess = new LibDataAccess();
-      const res = await dataAccess.executeRowsWithSql(sql);
-      if (!res || res.length === 0) {
-        throw new Error('Some error thrown when executing updating sql');
+    try {
+      const builder = new LibSQLBuilder(this.tbls);
+      const fields: string[] = [];
+      const values: any[] = [];
+      Object.keys(data).forEach(field => {
+        fields.push(field);
+        values.push(data[field]);
+      });
+      await this.beforeUpdate();
+      const sql = pkValues
+        ? builder.buildUpdateSqlByPks(tableIndex, fields, values, pkValues)
+        : builder.buildUpdateSqlByWhereClause(
+            tableIndex,
+            fields,
+            values,
+            whereClause
+          );
+      if (!sql) {
+        throw new Error('Some error thrown when building updating sql');
+      } else {
+        const dataAccess = new LibDataAccess();
+        const res = await dataAccess.executeRowsWithSql(sql);
+        if (!res || res.length === 0) {
+          throw new Error('Some error thrown when executing updating sql');
+        }
+        await this.afterUpdate(res);
+        return res;
       }
-      await this.afterUpdate(res);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  private async handleLoad(args: ILibModelLoadArgs): Promise<any[]> {
+    const {
+      pkValues,
+      whereClause,
+      tableIndex,
+      selectFields,
+      orderBy,
+      distinct,
+      limit,
+      offset
+    } = args;
+    if (selectFields === undefined) {
+      throw new Error('Missing parameters!');
+    }
+    try {
+      await this.beforeLoad();
+      const builder = new LibSQLBuilder(this.tbls);
+      let sqlParameterized = { sql: '' };
+      if (tableIndex === undefined) {
+        const sql = builder.buildModelQuerySqlByWhereClause(
+          selectFields,
+          whereClause,
+          {
+            orderBy,
+            distinct,
+            limit,
+            offset
+          }
+        );
+        if (sql) sqlParameterized = sql;
+      } else {
+        const sql = pkValues
+          ? builder.buildQuerySqlByPks(tableIndex, selectFields, pkValues, {
+              orderBy,
+              distinct,
+              limit,
+              offset
+            })
+          : builder.buildQuerySqlByWhereClause(
+              tableIndex,
+              selectFields,
+              whereClause,
+              {
+                orderBy,
+                distinct,
+                limit,
+                offset
+              }
+            );
+        if (sql) sqlParameterized = sql;
+      }
+      const dataAccess = new LibDataAccess();
+      const res = await dataAccess.executeRowsWithSql(sqlParameterized);
+      if (!res || res.length === 0) {
+        throw new Error('Some error thrown when executing querying sql');
+      }
+      await this.afterLoad(res);
       return res;
+    } catch (e) {
+      throw e;
     }
   }
   // #endregion
@@ -311,6 +390,7 @@ class LibModel implements ILibModel {
     // noop
   }
 
+  /** update table data */
   protected async update(args: ILibModelUpdateArgs): Promise<any[]> {
     if (args) {
       const { pkValues, whereClause, tableIndex, data } = args;
@@ -339,12 +419,19 @@ class LibModel implements ILibModel {
     // noop
   }
 
-  protected async load() {}
+  /** query data */
+  protected async load(args: ILibModelLoadArgs): Promise<any[]> {
+    if (args) {
+      return this.handleLoad(args);
+    } else {
+      throw new Error('Invalid argument!');
+    }
+  }
 
   /**
    * do something you want after loading
    */
-  protected async afterLoad() {
+  protected async afterLoad(res: any[]) {
     // noop
   }
   // #endregion

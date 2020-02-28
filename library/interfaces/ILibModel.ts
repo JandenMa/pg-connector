@@ -53,6 +53,25 @@ export interface ILibModelUpdateArgs {
   whereClause?: string;
 }
 
+export interface ILibModelLoadArgs {
+  /** fields you want to select */
+  selectFields: string[] | '*';
+  /** table index */
+  tableIndex?: number;
+  /** primary key values */
+  pkValues?: any[];
+  /** where clause */
+  whereClause?: string;
+  /** sort by field */
+  orderBy?: string;
+  /** whether distinct */
+  distinct?: boolean;
+  /** query counts, for pagination */
+  limit?: number;
+  /** query offset, for pagination */
+  offset?: number;
+}
+
 export interface ILibModel {
   tables: ILibTable[];
 }
