@@ -1,5 +1,7 @@
 {
   "name": "pg-connector",
+  "version": "0.1.0-alpha2",
+  "main": "index.js",
   "description": "A ORM library for Postgresql on NodeJS",
   "author": {
     "name": "Janden Ma",
@@ -21,6 +23,15 @@
     "eslint-plugin-prettier": "^3.1.2",
     "typescript": "^3.8.2"
   },
+  "files": [
+    "*.js",
+    "*.d.ts",
+    ".gitignore",
+    "package.json",
+    "README.md",
+    "README_zh.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "./node_modules/.bin/tsc && node index.js"
   },
