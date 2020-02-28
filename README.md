@@ -103,7 +103,7 @@ Pg-Connector is an ORM library for Postgresql on NodeJS.
   ```js
   import PgConnector from 'pg-connector'
   // or
-  const PgConnector = require('pg-connector') 
+  const PgConnector = require('pg-connector'
   ```
 
 - Instantiate
@@ -137,9 +137,9 @@ Pg-Connector is an ORM library for Postgresql on NodeJS.
 
 ## Modules
 
-- LibDataAccess
-- LibSQLBuilder
-- LibModel
+- [LibDataAccess](https://github.com/JandenMa/pg-connector/blob/master/LibDataAccess.md)
+- [LibSQLBuilder](https://github.com/JandenMa/pg-connector/blob/master/LibSQLBuilder.md)
+- [LibModel](https://github.com/JandenMa/pg-connector/blob/master/LibModel.md)
 - DataType
   - SERIAL
   - BIT
