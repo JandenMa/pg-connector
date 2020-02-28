@@ -73,5 +73,5 @@ export interface ILibModelLoadArgs {
 }
 
 export interface ILibModel {
-  tables: ILibTable[];
+  readonly tables: ILibTable[];
 }

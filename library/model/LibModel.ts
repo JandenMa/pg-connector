@@ -29,13 +29,7 @@ import LibSQLBuilder from '../data/LibSQLBuilder';
  */
 class LibModel implements ILibModel {
   // #region Properties
-  private tbls: ILibTable[];
-  // #endregion
-
-  // #region Accessors
-  public get tables(): ILibTable[] {
-    return this.tbls;
-  }
+  public readonly tables: ILibTable[];
   // #endregion
 
   constructor(args: ILibModelArgs) {
@@ -46,7 +40,7 @@ class LibModel implements ILibModel {
     if (tables.length === 0) {
       throw new Error(`Tables in the model couldn't be an empty array!`);
     }
-    this.tbls = tables;
+    this.tables = tables;
     if (autoCreate) {
       try {
         const builder = new LibSQLBuilder(tables);
@@ -64,7 +58,7 @@ class LibModel implements ILibModel {
     if (!tableIndex || !data) {
       throw new Error('Missing parameter!');
     }
-    const tables = this.tbls.filter(tbl => tbl.index === tableIndex);
+    const tables = this.tables.filter(tbl => tbl.index === tableIndex);
     if (tables && tables.length > 0) {
       const tbl = tables[0];
       const notNullList = tbl.primaryKeys;
@@ -99,7 +93,7 @@ class LibModel implements ILibModel {
     this.verfifyTblData(tableIndex, data);
     try {
       await this.beforeAddNew();
-      const builder = new LibSQLBuilder(this.tbls);
+      const builder = new LibSQLBuilder(this.tables);
       const fields: string[] = [];
       const values: any[] = [];
       Object.keys(data).forEach(field => {
@@ -131,7 +125,7 @@ class LibModel implements ILibModel {
     const sqls: ISqlParameterized[] = [];
     data.forEach((table, index) => {
       this.verfifyTblData(index, table);
-      const builder = new LibSQLBuilder(this.tbls);
+      const builder = new LibSQLBuilder(this.tables);
       const fields: string[] = [];
       const values: any[] = [];
       Object.keys(data).forEach(field => {
@@ -185,7 +179,7 @@ class LibModel implements ILibModel {
     whereClause?: string
   ): Promise<object> {
     await this.beforeDelete();
-    const builder = new LibSQLBuilder(this.tbls);
+    const builder = new LibSQLBuilder(this.tables);
     const sql = pkValues
       ? builder.buildDeleteSqlByPks(tableIndex, pkValues)
       : builder.buildDeleteSqlByWhereClause(tableIndex, whereClause);
@@ -202,6 +196,13 @@ class LibModel implements ILibModel {
     }
   }
 
+  /**
+   * handle update table
+   * @param tableIndex table index
+   * @param data data you want to update
+   * @param pkValues primary key values
+   * @param whereClause where clause
+   */
   private async handleUpdate(
     tableIndex: number,
     data: object,
@@ -210,7 +211,7 @@ class LibModel implements ILibModel {
   ): Promise<any[]> {
     this.verfifyTblData(tableIndex, data);
     try {
-      const builder = new LibSQLBuilder(this.tbls);
+      const builder = new LibSQLBuilder(this.tables);
       const fields: string[] = [];
       const values: any[] = [];
       Object.keys(data).forEach(field => {
@@ -242,6 +243,9 @@ class LibModel implements ILibModel {
     }
   }
 
+  /**
+   * handle query from table
+   */
   private async handleLoad(args: ILibModelLoadArgs): Promise<any[]> {
     const {
       pkValues,
@@ -258,7 +262,7 @@ class LibModel implements ILibModel {
     }
     try {
       await this.beforeLoad();
-      const builder = new LibSQLBuilder(this.tbls);
+      const builder = new LibSQLBuilder(this.tables);
       let sqlParameterized = { sql: '' };
       if (tableIndex === undefined) {
         const sql = builder.buildModelQuerySqlByWhereClause(

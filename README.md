@@ -1,6 +1,6 @@
 # Pg-Connector
 
-> Lib Version：0.1.0-beta1
+> Lib Version：0.1.0-beta2
 >
 > Document Version：0.1.0
 >
