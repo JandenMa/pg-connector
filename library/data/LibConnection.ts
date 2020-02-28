@@ -9,7 +9,6 @@
  * ******************************************/
 
 import { Pool } from 'pg';
-import { ConnectionArgsType } from '../types';
 
 /** A class to manage global states */
 class LibConnection {

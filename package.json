@@ -31,7 +31,9 @@
     ".gitignore",
     "package.json",
     "README.md",
-    "README_zh.md",
+    "LibModel.md",
+    "LibDataAccess.md",
+    "LibSQLBuilder.md",
     "LICENSE"
   ],
   "scripts": {

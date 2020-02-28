@@ -1,7 +1,8 @@
 {
   "module": "commonjs",
-  "target": "es2015",
+  "target": "es5",
   "compilerOptions": {
+    "module": "commonjs",
     "noImplicitAny": false,
     "strictNullChecks": true,
     "strict": true,
@@ -12,12 +13,11 @@
     "pretty": true,
     "listFiles": true,
     "listEmittedFiles": true,
-    "lib": ["es2019"],
+    "lib": ["es5", "es6", "es7"],
     // "module": "esnext",
     "declaration": true,
-    "removeComments": true,
+    "removeComments": false,
     "target": "es5",
-    // "jsx": "preserve",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "typeRoots": ["./node_modules/@types"]

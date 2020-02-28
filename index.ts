@@ -43,6 +43,5 @@ class PgConnector {
   }
 }
 
-module.exports = { PgConnector };
-module.exports.default = PgConnector;
-module.exports.PgConnector = PgConnector;
+export default PgConnector;
+export { PgConnector };
