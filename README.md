@@ -1,6 +1,6 @@
 # Pg-Connector
 
-> Lib Version：0.1.0-beta2
+> Lib Version：0.1.0
 >
 > Document Version：0.1.0
 >
@@ -87,7 +87,7 @@ Pg-Connector is an ORM library for Postgresql on NodeJS.
         ]
       });
       
-      // other functions you want
+      // other functions you want to override or customize
     }
   }
   
@@ -103,7 +103,7 @@ Pg-Connector is an ORM library for Postgresql on NodeJS.
   ```js
   import PgConnector from 'pg-connector'
   // or
-  const PgConnector = require('pg-connector'
+  const PgConnector = require('pg-connector')
   ```
 
 - Instantiate

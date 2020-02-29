@@ -1,6 +1,8 @@
 # LibSQLBuilder
 
 > A class for building sql
+>
+> Parameter with `?` means optional
 
 
 
@@ -11,113 +13,113 @@
   - parameter: 
     - null
   - return
-    - string[]
+    - `string[]`
 - buildInsertSql
   - build insert sql
-  - parameter: 
-    - index: number, table index
-    - fields: string[], fields you want to set when insert
-    - values: any[], values you want to set when insert
+  - parameters: 
+    - index: `number`, table index
+    - fields: `string[]`, fields you want to set when insert
+    - values: `any[]`, values you want to set when insert
   - return
-    - object | null
-      - sql: string
-      - replacements?: any[]
-      - alias?: string
+    - `object` | `null`
+      - sql: `string`
+      - replacements?: `any[]`
+      - alias?: `string`
 - buildDeleteSqlByPks
   - build delete sql by primary keys
-  - parameter: 
-    - index: number, table index
-    - pkValues: any[], primary key values
+  - parameters: 
+    - index: `number`, table index
+    - pkValues: `any[]`, primary key values
   - return
-    - object | null
-      - sql: string
-      - replacements?: any[]
-      - alias?: string
+    - `object` | `null`
+      - sql: `string`
+      - replacements?: `any[]`
+      - alias?: `string`
 - buildDeleteSqlByWhereClause
   - build delete sql by where clause
-  - parameter: 
-    - index: number, table index
-    - whereClause: string, where clause
+  - parameters: 
+    - index: `number`, table index
+    - whereClause: `string`, where clause
   - return
-    - object | null
-      - sql: string
-      - replacements?: any[]
-      - alias?: string
+    - `object` | `null`
+      - sql: `string`
+      - replacements?: `any[]`
+      - alias?: `string`
 - buildUpdateSqlByPks
   - build update sql by primary keys
-  - parameter: 
-    - index: number, table index
-    - updateFields: string[], fields you want to set when update
-    - updateValues: any[], values you want to set when update
-    - pkValues: any[], primary key values
+  - parameters: 
+    - index: `number`, table index
+    - updateFields: `string[]`, fields you want to set when update
+    - updateValues: `any[]`, values you want to set when update
+    - pkValues: `any[]`, primary key values
   - return
-    - object | null
-      - sql: string
-      - replacements?: any[]
-      - alias?: string
+    - `object` | `null`
+      - sql: `string`
+      - replacements?: `any[]`
+      - alias?: `string`
 - buildUpdateSqlByWhereClause
   - build update sql by where clause
-  - parameter: 
-    - index: number, table index
-    - updateFields: string[], fields you want to set when update
-    - updateValues: any[], values you want to set when update
-    - whereClause: string, where clause
+  - parameters: 
+    - index: `number`, table index
+    - updateFields: `string[]`, fields you want to set when update
+    - updateValues: `any[]`, values you want to set when update
+    - whereClause?: `string`, where clause
   - return
-    - object | null
-      - sql: string
-      - replacements?: any[]
-      - alias?: string
+    - `object` | `null`
+      - sql: `string`
+      - replacements?: `any[]`
+      - alias?: `string`
 - buildQuerySqlByPks
   - build single query sql for one table by primary keys
-  - parameter: 
-    - index: number, table index
-    - selectFields: string[] | '*', fields you want to select
-    - pkValues: any[], primary key values
-    - options: object
-      - orderBy: string, sort by clause, eg: "id DESC, name ASC"
-      - distinct: boolean, if true then will filter same data
-      - limit: number, query counts, for pagination
-      - offset: number, query offset, for pagination
+  - parameters: 
+    - index: `number`, table index
+    - selectFields: `string[]` | `'*'`, fields you want to select
+    - pkValues: `any[]`, primary key values
+    - options?: `object`
+      - orderBy?: `string`, sort by clause, eg: "id DESC, name ASC"
+      - distinct?: `boolean`, if true then will leave 1 row with same data
+      - limit?: `number`, query counts, for pagination
+      - offset?: `number`, query offset, for pagination
   - return
-    - object | null
-      - sql: string
-      - replacements?: any[]
-      - alias?: string
+    - `object` | `null`
+      - sql: `string`
+      - replacements?: `any[]`
+      - alias?: `string`
 - buildQuerySqlByWhereClause
   - build single query sql for one table by where clause
-  - parameter: 
-    - index: number, table index
-    - selectFields: string[] | '*', fields you want to select
-    - whereClause: string, where clause
-    - options: object
-      - orderBy: string, sort by clause, eg: "id DESC, name ASC"
-      - distinct: boolean, if true then will filter same data
-      - limit: number, query counts, for pagination
-      - offset: number, query offset, for pagination
+  - parameters: 
+    - index: `number`, table index
+    - selectFields: `string[]` | ` '*'`, fields you want to select
+    - whereClause?: `string`, where clause
+    - options?: `object`
+      - orderBy?: `string`, sort by clause, eg: "id DESC, name ASC"
+      - distinct?: `boolean`, if true then will leave 1 row with same data
+      - limit?: `number`, query counts, for pagination
+      - offset?: `number`, query offset, for pagination
   - return
-    - object | null
-      - sql: string
-      - replacements?: any[]
-      - alias?: string
+    - `object` | `null`
+      - sql: `string`
+      - replacements?: `any[]`
+      - alias?: `string`
 - buildModelQuerySqlByWhereClause
   - build delete sql by where clause
-  - parameter: 
-    - selectFields: string[] | '*', fields you want to select
-    - whereClause: string, where clause
-    - options: object
-      - orderBy: string, sort by clause, eg: "id DESC, name ASC"
-      - distinct: boolean, if true then will filter same data
-      - limit: number, query counts, for pagination
-      - offset: number, query offset, for pagination
+  - parameters: 
+    - selectFields: `string[]` |` '*'`, fields you want to select
+    - whereClause?: `string`, where clause
+    - options?: `object`
+      - orderBy?: `string`, sort by clause, eg: "id DESC, name ASC"
+      - distinct?: `boolean`, if true then will leave 1 row with same data
+      - limit?: `number`, query counts, for pagination
+      - offset?: `number`, query offset, for pagination
   - return
-    - object | null
-      - sql: string
-      - replacements?: any[]
-      - alias?: string
+    - `object` | `null`
+      - sql: `string`
+      - replacements?: `any[]`
+      - alias?: `string`
 - checkTableColumnExist
   - check whether the column exists in the data table
-  - parameter: 
-    - tableName: string, the name of data table
-    - columnName: the column name you will check
+  - parameters: 
+    - tableName: `string`, the name of data table
+    - columnName:  `string`, the column name you will check
   - return
-    - boolean
+    - `boolean`
