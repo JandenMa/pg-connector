@@ -19,7 +19,7 @@
     - name: `string`, field name
     - type: `DataType`, field data type
     - length?: `number`, field max length (only effective for char and varchar)
-    - defaultValue?: `number` | `string` | `boolean` | `null` | `JSON`, field default value
+    - defaultValue?: `number` | `string` | `boolean` | `null` | `JSON`, field default value, if you need set currect date / time as default value, please set 'now'.
     - notNull?: `boolean`, tag if can be null value
 
 
