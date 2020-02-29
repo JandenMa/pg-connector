@@ -388,7 +388,7 @@ class LibSQLBuilder implements ILibSQLBuilder {
           } ${fieldsStr} FROM ${tbl.name} WHERE `
         );
         pks.forEach((pk, i) => {
-          sql = sql.concat(`${pk} = $${i} `);
+          sql = sql.concat(`${pk} = $${i + 1} `);
           if (i !== pks.length - 1) {
             sql = sql.concat(' AND ');
           }
