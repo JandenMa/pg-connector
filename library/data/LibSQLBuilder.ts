@@ -128,12 +128,21 @@ class LibSQLBuilder implements ILibSQLBuilder {
             }
             break;
           case DataTypes.DATE:
+            sql = sql.concat(`"${fieldName}" ${DataTypes[type]}`);
+            if (defaultValue !== undefined) {
+              if (defaultValue === 'now') {
+                sql = sql.concat(` DEFAULT DATE(now())`);
+              } else {
+                sql = sql.concat(` DEFAULT ${defaultValue}`);
+              }
+            }
+            break;
           case DataTypes.TIMESTAMP:
           case DataTypes.TIMESTAMPTZ:
             sql = sql.concat(`"${fieldName}" ${DataTypes[type]}`);
             if (defaultValue !== undefined) {
               if (defaultValue === 'now') {
-                sql = sql.concat(` DEFAULT DATE(now())`);
+                sql = sql.concat(` DEFAULT CURRENT_TIMESTAMP`);
               } else {
                 sql = sql.concat(` DEFAULT ${defaultValue}`);
               }
