@@ -1,6 +1,6 @@
 {
   "name": "pg-connector",
-  "version": "0.1.0-rc1",
+  "version": "0.1.0-rc2",
   "main": "index.js",
   "description": "A ORM library for Postgresql on NodeJS",
   "author": {
