@@ -14,7 +14,7 @@ import {
   ILibSQLBuilder,
   ILibQuerySqlExtendArgs
 } from '../interfaces/ILibSQLBuilder';
-import { DataType } from '../enums';
+import { DataTypes } from '../enums';
 import LibSysUtils from '../utils/LibSysUtils';
 import LibDataAccess from './LibDataAccess';
 
@@ -115,21 +115,23 @@ class LibSQLBuilder implements ILibSQLBuilder {
     this.tbls.forEach(tbl => {
       const { name: tblName, fields, primaryKeys, unique } = tbl;
       let sql = `CREATE TABLE IF NOT EXISTS ${tblName} ( `;
-      fields.forEach((field, index) => {
+      fields.forEach(field => {
         const { name: fieldName, defaultValue, length, type, notNull } = field;
         switch (type) {
-          case DataType.CHAR:
-          case DataType.VARCHAR:
+          case DataTypes.CHAR:
+          case DataTypes.VARCHAR:
             sql = sql.concat(
-              `"${fieldName}" ${DataType[type]}(${length || 254})`
+              `"${fieldName}" ${DataTypes[type]}(${length || 254})`
             );
-            if (defaultValue) {
+            if (defaultValue !== undefined) {
               sql = sql.concat(` DEFAULT ${defaultValue}`);
             }
             break;
-          case DataType.DATE:
-            sql = sql.concat(`"${fieldName}" ${DataType[type]})`);
-            if (defaultValue) {
+          case DataTypes.DATE:
+          case DataTypes.TIMESTAMP:
+          case DataTypes.TIMESTAMPTZ:
+            sql = sql.concat(`"${fieldName}" ${DataTypes[type]}`);
+            if (defaultValue !== undefined) {
               if (defaultValue === 'now') {
                 sql = sql.concat(` DEFAULT DATE(now())`);
               } else {
@@ -137,33 +139,9 @@ class LibSQLBuilder implements ILibSQLBuilder {
               }
             }
             break;
-          case DataType.TIMESTAMP:
-            sql = sql.concat(
-              `"${fieldName}" ${DataType[type]} WITHOUT TIME ZONE)`
-            );
-            if (defaultValue) {
-              if (defaultValue === 'now') {
-                sql = sql.concat(` DEFAULT CURRENT_TIMESTAMP`);
-              } else {
-                sql = sql.concat(` DEFAULT ${defaultValue}`);
-              }
-            }
-            break;
-          case DataType.TIMESTAMPTZ:
-            sql = sql.concat(
-              `"${fieldName}" ${DataType[type]}) WITH TIME ZONE`
-            );
-            if (defaultValue) {
-              if (defaultValue === 'now') {
-                sql = sql.concat(` DEFAULT CURRENT_TIMESTAMP`);
-              } else {
-                sql = sql.concat(` DEFAULT ${defaultValue}`);
-              }
-            }
-            break;
           default:
-            sql = sql.concat(`"${fieldName}" ${DataType[type]})`);
-            if (defaultValue) {
+            sql = sql.concat(`"${fieldName}" ${DataTypes[type]}`);
+            if (defaultValue !== undefined) {
               sql = sql.concat(` DEFAULT ${defaultValue}`);
             }
             break;
@@ -171,16 +149,18 @@ class LibSQLBuilder implements ILibSQLBuilder {
         if (notNull) {
           sql = sql.concat(' NOT NULL');
         }
-        if (index !== fields.length - 1) {
-          sql = sql.concat(',');
-        }
+        sql = sql.concat(',');
       });
-      sql = sql.concat(` PRIMARY KEY (${primaryKeys.join(',')}) `);
+      sql = sql.concat(
+        ` PRIMARY KEY (${primaryKeys
+          .map(pk => LibSysUtils.getQuoteString(pk, false))
+          .join(',')}) `
+      );
       if (unique) {
         sql = sql.concat(
-          ` CONSTRAINT ${tblName}_unique_constraint UNIQUE (${unique.join(
-            ','
-          )}) `
+          `, CONSTRAINT ${tblName}_unique_constraint UNIQUE (${unique
+            .map(u => LibSysUtils.getQuoteString(u, false))
+            .join(',')}) `
         );
       }
       sql = sql.concat(' );');
@@ -239,7 +219,9 @@ class LibSQLBuilder implements ILibSQLBuilder {
         let sql = '';
         sql = sql.concat(`DELETE FROM ${tbl.name} WHERE `);
         pks.forEach((pk, i) => {
-          sql = sql.concat(`${pk} = $${i + 1} `);
+          sql = sql.concat(
+            `${LibSysUtils.getQuoteString(pk, false)} = $${i + 1} `
+          );
           if (i !== pks.length - 1) {
             sql = sql.concat(' AND ');
           }
@@ -296,7 +278,9 @@ class LibSQLBuilder implements ILibSQLBuilder {
           let i = 1;
           sql = sql.concat(`UPDATE ${tbl.name} SET `);
           updateFields.forEach(f => {
-            sql = sql.concat(`${f} = $${i} `);
+            sql = sql.concat(
+              `${LibSysUtils.getQuoteString(f, false)} = $${i} `
+            );
             i += 1;
             if (i !== updateFields.length - 1) {
               sql = sql.concat(', ');
@@ -304,7 +288,9 @@ class LibSQLBuilder implements ILibSQLBuilder {
           });
           sql = sql.concat(' WHERE ');
           pks.forEach(pk => {
-            sql = sql.concat(`${pk} = $${i} `);
+            sql = sql.concat(
+              `${LibSysUtils.getQuoteString(pk, false)} = $${i} `
+            );
             i += 1;
             if (i !== pks.length - 1) {
               sql = sql.concat(' AND ');
@@ -339,7 +325,9 @@ class LibSQLBuilder implements ILibSQLBuilder {
         let sql = '';
         sql = sql.concat(`UPDATE ${tbl.name} SET `);
         updateFields.forEach((f, i) => {
-          sql = sql.concat(`${f} = $${i + 1} `);
+          sql = sql.concat(
+            `${LibSysUtils.getQuoteString(f, false)} = $${i + 1} `
+          );
           if (i !== updateFields.length - 1) {
             sql = sql.concat(', ');
           }
@@ -388,7 +376,9 @@ class LibSQLBuilder implements ILibSQLBuilder {
           } ${fieldsStr} FROM ${tbl.name} WHERE `
         );
         pks.forEach((pk, i) => {
-          sql = sql.concat(`${pk} = $${i + 1} `);
+          sql = sql.concat(
+            `${LibSysUtils.getQuoteString(pk, false)} = $${i + 1} `
+          );
           if (i !== pks.length - 1) {
             sql = sql.concat(' AND ');
           }

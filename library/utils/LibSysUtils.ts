@@ -38,10 +38,10 @@ class LibSysUtils {
     let returnStr: string = '';
     strs.forEach((str, index) => {
       if (mergeEmpty || (!mergeEmpty && str)) {
-        if (returnStr && index !== strs.length - 1) {
-          returnStr.concat(` ${symbol}`);
+        if (returnStr && index !== strs.length) {
+          returnStr = returnStr.concat(` ${symbol}`);
         }
-        returnStr.concat(` ${str}`);
+        returnStr = returnStr.concat(` ${str}`);
       }
     });
     return returnStr;

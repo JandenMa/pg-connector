@@ -1,4 +1,4 @@
-export enum DataType {
+export enum DataTypes {
   SERIAL,
   BIT,
   BOOLEAN,

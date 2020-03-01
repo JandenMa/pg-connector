@@ -33,7 +33,7 @@ class LibModel implements ILibModel {
   // #endregion
 
   constructor(args: ILibModelArgs) {
-    const { autoCreate = false, tables } = args;
+    const { tables } = args;
     if (!tables) {
       throw new Error(`Tables in the model couldn't be null or undefined!`);
     }
@@ -41,29 +41,42 @@ class LibModel implements ILibModel {
       throw new Error(`Tables in the model couldn't be an empty array!`);
     }
     this.tables = tables;
-    if (autoCreate) {
-      try {
-        const builder = new LibSQLBuilder(tables);
-        const dataAccess = new LibDataAccess();
-        const createSqls = builder.buildCreateTableSql();
-        dataAccess.executeNonQueryWithSqls(createSqls.map(sql => ({ sql })));
-      } catch (e) {
-        throw e;
-      }
+  }
+
+  /** initial table */
+  public static async init(): Promise<void> {
+    try {
+      const inst = new this({ tables: [] });
+      const builder = new LibSQLBuilder(inst.tables);
+      const dataAccess = new LibDataAccess();
+      const createSqls = builder.buildCreateTableSql();
+      await dataAccess.executeNonQueryWithSqls(
+        createSqls.map(sql => ({ sql }))
+      );
+    } catch (e) {
+      throw e;
     }
   }
 
   // #region Private Functions
-  private verfifyTblData(tableIndex: number, data: object): boolean {
-    if (!tableIndex || !data) {
+  private verfifyTblData(
+    tableIndex: number,
+    data: object,
+    checkPks?: boolean
+  ): boolean {
+    if (tableIndex === undefined || !data) {
       throw new Error('Missing parameter!');
     }
     const tables = this.tables.filter(tbl => tbl.index === tableIndex);
     if (tables && tables.length > 0) {
       const tbl = tables[0];
-      const notNullList = tbl.primaryKeys;
+      const notNullList = checkPks ? tbl.primaryKeys : [];
       tbl.fields.forEach(f => {
-        if (f.notNull && !notNullList.includes(f.name)) {
+        if (
+          f.notNull &&
+          f.defaultValue === undefined &&
+          !notNullList.includes(f.name)
+        ) {
           notNullList.push(f.name);
         }
       });
@@ -87,10 +100,7 @@ class LibModel implements ILibModel {
     tableIndex: number,
     data: object
   ): Promise<object> {
-    if (!tableIndex || !data) {
-      throw new Error('Missing parameter!');
-    }
-    this.verfifyTblData(tableIndex, data);
+    this.verfifyTblData(tableIndex, data, false);
     try {
       await this.beforeAddNew();
       const builder = new LibSQLBuilder(this.tables);
@@ -124,7 +134,7 @@ class LibModel implements ILibModel {
   private async handleAddNewIntoTables(data: any[]): Promise<object> {
     const sqls: ISqlParameterized[] = [];
     data.forEach((table, index) => {
-      this.verfifyTblData(index, table);
+      this.verfifyTblData(index, table, false);
       const builder = new LibSQLBuilder(this.tables);
       const fields: string[] = [];
       const values: any[] = [];
@@ -209,7 +219,7 @@ class LibModel implements ILibModel {
     pkValues?: any[],
     whereClause?: string
   ): Promise<any[]> {
-    this.verfifyTblData(tableIndex, data);
+    this.verfifyTblData(tableIndex, data, pkValues ? true : false);
     try {
       const builder = new LibSQLBuilder(this.tables);
       const fields: string[] = [];
@@ -299,7 +309,7 @@ class LibModel implements ILibModel {
       }
       const dataAccess = new LibDataAccess();
       const res = await dataAccess.executeRowsWithSql(sqlParameterized);
-      if (!res || res.length === 0) {
+      if (!res) {
         throw new Error('Some error thrown when executing querying sql');
       }
       await this.afterLoad(res);

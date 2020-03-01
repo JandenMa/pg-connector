@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { DataType } from './library/enums';
+import { DataTypes } from './library/enums';
 import { IConnection } from './library/interfaces/IPgConnector';
 import LibModel from './library/model/LibModel';
 import LibConnection from './library/data/LibConnection';
@@ -10,7 +10,7 @@ class PgConnector {
   public readonly Model: typeof LibModel;
   public readonly SQLBuilder: typeof LibSQLBuilder;
   public readonly DataAccess: typeof LibDataAccess;
-  public readonly DataType: typeof DataType;
+  public readonly DataTypes: typeof DataTypes;
 
   constructor(args?: IConnection) {
     const {
@@ -35,10 +35,11 @@ class PgConnector {
       idleTimeoutMillis,
       ssl
     });
+    console.info(`Connected DB at ${host}:${port}/${database} successfully!👍`);
     LibConnection.setPool(pool);
     this.Model = LibModel;
     this.DataAccess = LibDataAccess;
-    this.DataType = DataType;
+    this.DataTypes = DataTypes;
     this.SQLBuilder = LibSQLBuilder;
   }
 }

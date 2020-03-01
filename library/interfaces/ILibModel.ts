@@ -1,10 +1,10 @@
-import { DataType } from '../enums';
+import { DataTypes } from '../enums';
 
 export interface ILibField {
   /** field name */
   name: string;
   /** field data type */
-  type: DataType;
+  type: DataTypes;
   /** field max length */
   length?: number;
   /** field default value */
@@ -27,8 +27,6 @@ export interface ILibTable {
 }
 
 export interface ILibModelArgs {
-  /** if true that it will create table when instantiating, default false */
-  autoCreate?: boolean;
   /** data tables */
   tables: ILibTable[];
 }
