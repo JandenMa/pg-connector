@@ -8,8 +8,6 @@
 
 ## Constructor
 
-- autoCreate: `boolean`
-  - if true will create data table when instantiated (if table doesn't exist)
 - tables: `object[]`
   - index: `number`, table index, from 0
   - name: `string`, table name, same as data table in database
@@ -21,6 +19,13 @@
     - length?: `number`, field max length (only effective for char and varchar)
     - defaultValue?: `number` | `string` | `boolean` | `null` | `JSON`, field default value, if you need set currect date / time as default value, please set 'now'.
     - notNull?: `boolean`, tag if can be null value
+
+
+
+## Static Functions
+
+- init
+  - will create data table if not exists
 
 
 

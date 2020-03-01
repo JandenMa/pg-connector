@@ -91,6 +91,8 @@ Pg-Connector is an ORM library for Postgresql on NodeJS.
     }
   }
   
+  User.init();  // will create data table if not exists
+  
   export default User
   ```
 
@@ -140,7 +142,7 @@ Pg-Connector is an ORM library for Postgresql on NodeJS.
 - [LibDataAccess](https://github.com/JandenMa/pg-connector/blob/master/LibDataAccess.md)
 - [LibSQLBuilder](https://github.com/JandenMa/pg-connector/blob/master/LibSQLBuilder.md)
 - [LibModel](https://github.com/JandenMa/pg-connector/blob/master/LibModel.md)
-- DataType
+- DataTypes
   - SERIAL: Serial Id
   - BIT
   - BOOLEAN
