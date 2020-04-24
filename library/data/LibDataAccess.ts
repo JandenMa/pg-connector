@@ -134,7 +134,7 @@ class LibDataAccess implements ILibDataAccess {
         await this.client.query('COMMIT');
         this.releaseClient();
       } catch (e) {
-        this.rollbackTransaction(e);
+        await this.rollbackTransaction(e);
       }
     } else {
       console.error('No client connected!');
@@ -181,7 +181,7 @@ class LibDataAccess implements ILibDataAccess {
     try {
       let n: number = 0;
       await Promise.all(
-        args.map(async arg => {
+        args.map(async (arg) => {
           const { sql, replacements = [] } = arg;
           const result: QueryResult =
             replacements && replacements.length > 0
