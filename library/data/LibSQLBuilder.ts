@@ -94,10 +94,15 @@ class LibSQLBuilder implements ILibSQLBuilder {
     let sql = '';
 
     if (orderBy && orderBy.length > 0) {
-      orderBy.forEach((o) => {
+      let clause = '';
+      orderBy.forEach((o, i) => {
         const { field, sequence = 'ASC' } = o;
-        sql = sql.concat(` ORDER BY "${field}" ${sequence}`);
+        clause = clause.concat(`"${field}" ${sequence}`);
+        if (i < orderBy.length - 1) {
+          clause = clause.concat(',');
+        }
       });
+      sql = sql.concat(` ORDER BY ${clause}`);
     }
     if (limit) {
       sql = sql.concat(` LIMIT ${limit}`);
