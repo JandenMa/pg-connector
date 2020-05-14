@@ -11,6 +11,7 @@
 ## Version Change Logs
 
 - **v0.1.1 (Build20200514):** Correct `orderBy` option for build querying sql
+- **v0.1.2 (Build20200514):** Update README
 
 
 
