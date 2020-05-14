@@ -1,4 +1,5 @@
 import { DataTypes } from '../enums';
+import { ILibQuerySqlOrderBy } from './ILibSQLBuilder';
 
 export interface ILibField {
   /** field name */
@@ -61,7 +62,7 @@ export interface ILibModelLoadArgs {
   /** where clause */
   whereClause?: string;
   /** sort by field */
-  orderBy?: string;
+  orderBy?: ILibQuerySqlOrderBy[];
   /** whether distinct */
   distinct?: boolean;
   /** query counts, for pagination */

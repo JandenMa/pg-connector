@@ -76,7 +76,9 @@
     - selectFields: `string[]` | `'*'`, fields you want to select
     - pkValues: `any[]`, primary key values
     - options?: `object`
-      - orderBy?: `string`, sort by clause, eg: "id DESC, name ASC"
+      - orderBy?: `array`, for sort by clause
+        - field: `string`, sorting field
+        - sequence: `string`, either of `'ASC'` and`'DESC'`, default `'ASC'`
       - distinct?: `boolean`, if true then will leave 1 row with same data
       - limit?: `number`, query counts, for pagination
       - offset?: `number`, query offset, for pagination
@@ -92,7 +94,9 @@
     - selectFields: `string[]` | ` '*'`, fields you want to select
     - whereClause?: `string`, where clause
     - options?: `object`
-      - orderBy?: `string`, sort by clause, eg: "id DESC, name ASC"
+      - orderBy?: `array`, for sort by clause
+        - field: `string`, sorting field
+        - sequence: `string`, either of `'ASC'` and`'DESC'`, default `'ASC'`
       - distinct?: `boolean`, if true then will leave 1 row with same data
       - limit?: `number`, query counts, for pagination
       - offset?: `number`, query offset, for pagination
@@ -107,7 +111,9 @@
     - selectFields: `string[]` |` '*'`, fields you want to select
     - whereClause?: `string`, where clause
     - options?: `object`
-      - orderBy?: `string`, sort by clause, eg: "id DESC, name ASC"
+      - orderBy?: `array`, for sort by clause
+        - field: `string`, sorting field
+        - sequence: `string`, either of `'ASC'` and`'DESC'`, default `'ASC'`
       - distinct?: `boolean`, if true then will leave 1 row with same data
       - limit?: `number`, query counts, for pagination
       - offset?: `number`, query offset, for pagination
