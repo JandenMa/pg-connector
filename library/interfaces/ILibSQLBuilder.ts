@@ -1,7 +1,12 @@
 import { ISqlParameterized } from './ILibDataAccess';
 
+export interface ILibQuerySqlOrderBy {
+  field: string;
+  sequence?: 'ASC' | 'DESC';
+}
+
 export interface ILibQuerySqlExtendArgs {
-  orderBy?: string;
+  orderBy?: ILibQuerySqlOrderBy[];
   distinct?: boolean;
   limit?: number;
   offset?: number;

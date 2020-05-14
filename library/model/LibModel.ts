@@ -51,7 +51,7 @@ class LibModel implements ILibModel {
       const dataAccess = new LibDataAccess();
       const createSqls = builder.buildCreateTableSql();
       await dataAccess.executeNonQueryWithSqls(
-        createSqls.map(sql => ({ sql }))
+        createSqls.map((sql) => ({ sql }))
       );
     } catch (e) {
       throw e;
@@ -67,11 +67,11 @@ class LibModel implements ILibModel {
     if (tableIndex === undefined || !data) {
       throw new Error('Missing parameter!');
     }
-    const tables = this.tables.filter(tbl => tbl.index === tableIndex);
+    const tables = this.tables.filter((tbl) => tbl.index === tableIndex);
     if (tables && tables.length > 0) {
       const tbl = tables[0];
       const notNullList = checkPks ? tbl.primaryKeys : [];
-      tbl.fields.forEach(f => {
+      tbl.fields.forEach((f) => {
         if (
           f.notNull &&
           f.defaultValue === undefined &&
@@ -80,7 +80,7 @@ class LibModel implements ILibModel {
           notNullList.push(f.name);
         }
       });
-      notNullList.forEach(f => {
+      notNullList.forEach((f) => {
         if (!data[f]) {
           throw new Error(`${f} is a not null field but no value provided!`);
         }
@@ -106,7 +106,7 @@ class LibModel implements ILibModel {
       const builder = new LibSQLBuilder(this.tables);
       const fields: string[] = [];
       const values: any[] = [];
-      Object.keys(data).forEach(field => {
+      Object.keys(data).forEach((field) => {
         fields.push(field);
         values.push(data[field]);
       });
@@ -138,7 +138,7 @@ class LibModel implements ILibModel {
       const builder = new LibSQLBuilder(this.tables);
       const fields: string[] = [];
       const values: any[] = [];
-      Object.keys(data).forEach(field => {
+      Object.keys(data).forEach((field) => {
         fields.push(field);
         values.push(data[field]);
       });
@@ -224,7 +224,7 @@ class LibModel implements ILibModel {
       const builder = new LibSQLBuilder(this.tables);
       const fields: string[] = [];
       const values: any[] = [];
-      Object.keys(data).forEach(field => {
+      Object.keys(data).forEach((field) => {
         fields.push(field);
         values.push(data[field]);
       });

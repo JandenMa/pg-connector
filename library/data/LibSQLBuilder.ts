@@ -54,7 +54,7 @@ class LibSQLBuilder implements ILibSQLBuilder {
    * @returns data table
    */
   private getTableByIndex(index: number): ILibTable | null {
-    const tables = this.tbls.filter(tbl => tbl.index === index);
+    const tables = this.tbls.filter((tbl) => tbl.index === index);
     if (tables && tables.length > 0) {
       return tables[0];
     }
@@ -93,8 +93,11 @@ class LibSQLBuilder implements ILibSQLBuilder {
     const { orderBy, limit, offset } = options;
     let sql = '';
 
-    if (orderBy) {
-      sql = sql.concat(` ORDER BY "${orderBy}"`);
+    if (orderBy && orderBy.length > 0) {
+      orderBy.forEach((o) => {
+        const { field, sequence = 'ASC' } = o;
+        sql = sql.concat(` ORDER BY "${field}" ${sequence}`);
+      });
     }
     if (limit) {
       sql = sql.concat(` LIMIT ${limit}`);
@@ -112,10 +115,10 @@ class LibSQLBuilder implements ILibSQLBuilder {
   /** build create table sql */
   public buildCreateTableSql(): string[] {
     const sqls: string[] = [];
-    this.tbls.forEach(tbl => {
+    this.tbls.forEach((tbl) => {
       const { name: tblName, fields, primaryKeys, unique } = tbl;
       let sql = `CREATE TABLE IF NOT EXISTS ${tblName} ( `;
-      fields.forEach(field => {
+      fields.forEach((field) => {
         const { name: fieldName, defaultValue, length, type, notNull } = field;
         switch (type) {
           case DataTypes.CHAR:
@@ -162,13 +165,13 @@ class LibSQLBuilder implements ILibSQLBuilder {
       });
       sql = sql.concat(
         ` PRIMARY KEY (${primaryKeys
-          .map(pk => LibSysUtils.getQuoteString(pk, false))
+          .map((pk) => LibSysUtils.getQuoteString(pk, false))
           .join(',')}) `
       );
       if (unique) {
         sql = sql.concat(
           `, CONSTRAINT ${tblName}_unique_constraint UNIQUE (${unique
-            .map(u => LibSysUtils.getQuoteString(u, false))
+            .map((u) => LibSysUtils.getQuoteString(u, false))
             .join(',')}) `
         );
       }
@@ -194,7 +197,7 @@ class LibSQLBuilder implements ILibSQLBuilder {
       if (tbl) {
         let sql = '';
         let valsStr = '';
-        const insertFields = fields.map(field =>
+        const insertFields = fields.map((field) =>
           LibSysUtils.getQuoteString(field, false)
         );
         const fieldsStr = LibSysUtils.mergeString(',', false, ...insertFields);
@@ -286,7 +289,7 @@ class LibSQLBuilder implements ILibSQLBuilder {
           let sql = '';
           let i = 1;
           sql = sql.concat(`UPDATE ${tbl.name} SET `);
-          updateFields.forEach(f => {
+          updateFields.forEach((f) => {
             sql = sql.concat(
               `${LibSysUtils.getQuoteString(f, false)} = $${i} `
             );
@@ -296,7 +299,7 @@ class LibSQLBuilder implements ILibSQLBuilder {
             }
           });
           sql = sql.concat(' WHERE ');
-          pks.forEach(pk => {
+          pks.forEach((pk) => {
             sql = sql.concat(
               `${LibSysUtils.getQuoteString(pk, false)} = $${i} `
             );
@@ -373,7 +376,7 @@ class LibSQLBuilder implements ILibSQLBuilder {
         if (selectFields === '*') {
           fieldsStr = '*';
         } else {
-          const fields = selectFields.map(field =>
+          const fields = selectFields.map((field) =>
             LibSysUtils.getQuoteString(field, false)
           );
           fieldsStr = LibSysUtils.mergeString(', ', false, ...fields);
@@ -422,7 +425,7 @@ class LibSQLBuilder implements ILibSQLBuilder {
       if (selectFields === '*') {
         fieldsStr = '*';
       } else {
-        const fields = selectFields.map(field =>
+        const fields = selectFields.map((field) =>
           LibSysUtils.getQuoteString(field, false)
         );
         fieldsStr = LibSysUtils.mergeString(', ', false, ...fields);
@@ -460,7 +463,7 @@ class LibSQLBuilder implements ILibSQLBuilder {
     if (selectFields === '*') {
       fieldsStr = '*';
     } else {
-      const fields = selectFields.map(field =>
+      const fields = selectFields.map((field) =>
         LibSysUtils.getQuoteString(field, false)
       );
       fieldsStr = LibSysUtils.mergeString(', ', false, ...fields);
