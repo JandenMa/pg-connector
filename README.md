@@ -1,12 +1,16 @@
 # Pg-Connector
 
-> Lib Version：0.1.0
+> Lib Version：0.1.1
 >
-> Document Version：0.1.0
+> Document Version：0.1.1
 >
 > Author：Janden Ma
 >
 > LICENCE: MIT
+
+## Version Change Logs
+
+- **v0.1.1 (Build20200514):** Correct `orderBy` option for build querying sql
 
 
 
