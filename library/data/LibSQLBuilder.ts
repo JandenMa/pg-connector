@@ -294,22 +294,22 @@ class LibSQLBuilder implements ILibSQLBuilder {
           let sql = '';
           let i = 1;
           sql = sql.concat(`UPDATE ${tbl.name} SET `);
-          updateFields.forEach((f) => {
+          updateFields.forEach((f, index) => {
             sql = sql.concat(
               `${LibSysUtils.getQuoteString(f, false)} = $${i} `
             );
             i += 1;
-            if (i !== updateFields.length - 1) {
+            if (index !== updateFields.length - 1) {
               sql = sql.concat(', ');
             }
           });
           sql = sql.concat(' WHERE ');
-          pks.forEach((pk) => {
+          pks.forEach((pk, index) => {
             sql = sql.concat(
               `${LibSysUtils.getQuoteString(pk, false)} = $${i} `
             );
             i += 1;
-            if (i !== pks.length - 1) {
+            if (index !== pks.length - 1) {
               sql = sql.concat(' AND ');
             }
           });

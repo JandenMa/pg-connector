@@ -138,9 +138,9 @@ class LibModel implements ILibModel {
       const builder = new LibSQLBuilder(this.tables);
       const fields: string[] = [];
       const values: any[] = [];
-      Object.keys(data).forEach((field) => {
+      Object.keys(table).forEach((field) => {
         fields.push(field);
-        values.push(data[field]);
+        values.push(table[field]);
       });
       const sql = builder.buildInsertSql(index, fields, values);
       if (!sql) {

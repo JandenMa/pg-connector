@@ -109,7 +109,6 @@ class LibDataAccess implements ILibDataAccess {
               replacements && replacements.length > 0
                 ? await this.client.query(sql, replacements)
                 : await this.client.query(sql);
-            this.releaseClient();
             alias ? (res[alias] = result.rows) : (res[index] = result.rows);
           } else {
             console.error('No client connected!');
