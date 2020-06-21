@@ -1,8 +1,8 @@
 # Pg-Connector
 
-> Lib Version：0.1.1
+> Lib Version：0.1.4
 >
-> Document Version：0.1.1
+> Document Version：0.1.4
 >
 > Author：Janden Ma
 >
@@ -12,6 +12,8 @@
 
 - **v0.1.1 (Build20200514):** Correct `orderBy` option for build querying sql
 - **v0.1.2 (Build20200514):** Update README
+- **v0.1.3 (Build20200515):** Optimizations
+- **v0.1.4 (Build20200621):** Resolve bugs
 
 
 
