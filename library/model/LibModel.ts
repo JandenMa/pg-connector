@@ -12,6 +12,7 @@
 // TODO support confirm pk values couldn't be updated
 // TODO support update tables in the model
 
+import isNil from 'lodash/isNil';
 import {
   ILibModelArgs,
   ILibTable,
@@ -59,7 +60,7 @@ class LibModel implements ILibModel {
   }
 
   // #region Private Functions
-  private verfifyTblData(
+  private verfifyTblInsertingData(
     tableIndex: number,
     data: object,
     checkPks?: boolean
@@ -73,6 +74,7 @@ class LibModel implements ILibModel {
       const notNullList = checkPks ? tbl.primaryKeys : [];
       tbl.fields.forEach((f) => {
         if (
+          !tbl.primaryKeys.includes(f.name) &&
           f.notNull &&
           f.defaultValue === undefined &&
           !notNullList.includes(f.name)
@@ -91,6 +93,36 @@ class LibModel implements ILibModel {
     }
   }
 
+  private verfifyTblUpdatingData(tableIndex: number, data: object): boolean {
+    if (tableIndex === undefined || !data) {
+      throw new Error('Missing parameter!');
+    }
+    const tables = this.tables.filter((tbl) => tbl.index === tableIndex);
+    if (tables && tables.length > 0) {
+      const tbl = tables[0];
+      Object.keys(data).forEach((k) => {
+        const field = tbl.fields.find((f) => f.name === k);
+        if (isNil(field)) {
+          throw new Error(
+            `${k} is not an valid column in the ${tbl.name} table`
+          );
+        }
+        if (
+          field.notNull &&
+          field.defaultValue === undefined &&
+          isNil(data[k])
+        ) {
+          throw new Error(
+            `${k} is a not null field but no value provided, or provide undefined value!`
+          );
+        }
+      });
+      return true;
+    }
+
+    throw new Error(`DataTable[${tableIndex}] is not exist!`);
+  }
+
   /**
    * handle insert into single table
    * @param tableIndex table index
@@ -100,7 +132,7 @@ class LibModel implements ILibModel {
     tableIndex: number,
     data: object
   ): Promise<object> {
-    this.verfifyTblData(tableIndex, data, false);
+    this.verfifyTblInsertingData(tableIndex, data, false);
     try {
       await this.beforeAddNew();
       const builder = new LibSQLBuilder(this.tables);
@@ -134,7 +166,7 @@ class LibModel implements ILibModel {
   private async handleAddNewIntoTables(data: any[]): Promise<object> {
     const sqls: ISqlParameterized[] = [];
     data.forEach((table, index) => {
-      this.verfifyTblData(index, table, false);
+      this.verfifyTblInsertingData(index, table, false);
       const builder = new LibSQLBuilder(this.tables);
       const fields: string[] = [];
       const values: any[] = [];
@@ -219,7 +251,7 @@ class LibModel implements ILibModel {
     pkValues?: any[],
     whereClause?: string
   ): Promise<any[]> {
-    this.verfifyTblData(tableIndex, data, pkValues ? true : false);
+    this.verfifyTblUpdatingData(tableIndex, data);
     try {
       const builder = new LibSQLBuilder(this.tables);
       const fields: string[] = [];
