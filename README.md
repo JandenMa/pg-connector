@@ -1,8 +1,8 @@
 # Pg-Connector
 
-> Lib Version：0.1.4
+> Lib Version：0.1.5
 >
-> Document Version：0.1.4
+> Document Version：0.1.5
 >
 > Author：Janden Ma
 >
@@ -14,6 +14,7 @@
 - **v0.1.2 (Build20200514):** Update README
 - **v0.1.3 (Build20200515):** Optimizations
 - **v0.1.4 (Build20200621):** Resolve bugs
+- **v0.1.5 (Build20200729):** Bug fixes
 
 
 
