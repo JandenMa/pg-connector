@@ -83,7 +83,6 @@ class LibDataAccess implements ILibDataAccess {
           replacements && replacements.length > 0
             ? await this.client.query(sql, replacements)
             : await this.client.query(sql);
-        this.releaseClient();
         return result.rows;
       } catch (e) {
         this.rollbackTransaction(e);
@@ -115,7 +114,6 @@ class LibDataAccess implements ILibDataAccess {
           }
         })
       );
-      this.releaseClient();
       return res;
     } catch (e) {
       this.rollbackTransaction(e);
