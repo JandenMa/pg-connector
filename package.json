@@ -1,6 +1,6 @@
 {
   "name": "pg-connector",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "main": "index.js",
   "description": "A ORM library for Postgresql on NodeJS",
   "author": {
@@ -19,13 +19,13 @@
   },
   "homepage": "https://jandenma.github.io/pg-connector/",
   "dependencies": {
-    "lodash": "^4.17.15",
-    "pg": "^7.18.2"
+    "lodash": "^4.17.20",
+    "pg": "^8.4.1"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.149",
     "@types/node": "^12.12.37",
-    "@types/pg": "^7.14.1",
+    "@types/pg": "^7.14.5",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.9.0",
     "eslint-plugin-import": "^2.20.0",

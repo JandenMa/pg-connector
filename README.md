@@ -1,8 +1,8 @@
 # Pg-Connector
 
-> Lib Version：0.1.5
+> Lib Version：0.1.6
 >
-> Document Version：0.1.5
+> Document Version：0.1.6
 >
 > Author：Janden Ma
 >
@@ -15,6 +15,7 @@
 - **v0.1.3 (Build20200515):** Optimizations
 - **v0.1.4 (Build20200621):** Resolve bugs
 - **v0.1.5 (Build20200729):** Bug fixes
+- **v0.1.6 (Build20201010):** Support PostgreSQL 13
 
 
 
